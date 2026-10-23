@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
-import { MapViewer } from './components/MapViewer';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { MapViewer, type AgencyFilter } from './components/MapViewer';
 import { VerificationDrawer } from './components/VerificationDrawer';
 import { IngestModal } from './components/IngestModal';
 import { TimelineScrubber } from './components/TimelineScrubber';
@@ -12,12 +13,7 @@ import {
   FileText,
   Layers,
   Trash2,
-  ShieldCheck,
-  AlertTriangle,
-  Database,
-  Sparkles,
-  CheckCircle2,
-  ArrowLeft,
+  Play,
 } from 'lucide-react';
 
 const API_BASE_URL = 'http://localhost:8000';
@@ -52,16 +48,13 @@ export function App() {
   const [activeCorridor, setActiveCorridor] = useState<any | null>(null);
   const [clashes, setClashes] = useState<any[]>([]);
   const [selectedClash, setSelectedClash] = useState<any | null>(null);
-  const [systemStatus, setSystemStatus] = useState<any>(null);
   const [isResolving, setIsResolving] = useState<boolean>(false);
   const [isSeedingDemo, setIsSeedingDemo] = useState<boolean>(false);
 
   // 4D Spatio-Temporal Timeline Scrubber state
   const [currentMonthKey, setCurrentMonthKey] = useState<string>('2026-12');
   const [filterByMonth, setFilterByMonth] = useState<boolean>(false);
-
-  // Pending file for upload-then-transition flow
-  const pendingFileRef = useRef<File | null>(null);
+  const [agencyFilter, setAgencyFilter] = useState<AgencyFilter>('ALL');
 
   // ── URL hash routing for Terms / Privacy ──────────────────────────────────
   useEffect(() => {
@@ -69,18 +62,16 @@ export function App() {
       const hash = window.location.hash.toLowerCase();
       if (hash === '#terms') setCurrentView('terms');
       else if (hash === '#privacy') setCurrentView('privacy');
-      else if (currentView === 'terms' || currentView === 'privacy') setCurrentView('portal');
     };
     handleHash();
     window.addEventListener('hashchange', handleHash);
     return () => window.removeEventListener('hashchange', handleHash);
   }, []);
 
-  // ── Fetch health + corridors + clashes (console only) ────────────────────
+  // ── Fetch corridors + clashes (console only) ────────────────────────────
   const refreshData = async () => {
     try {
-      const healthRes = await fetch(`${API_BASE_URL}/api/health`);
-      setSystemStatus(await healthRes.json());
+      await fetch(`${API_BASE_URL}/api/health`);
     } catch (_) {}
 
     try {
@@ -148,7 +139,6 @@ export function App() {
 
   // ── Landing Portal callbacks ──────────────────────────────────────────────
   const handlePortalFileUpload = (file: File) => {
-    pendingFileRef.current = file;
     runLoadingSequence(file);
   };
 
@@ -237,385 +227,368 @@ export function App() {
   };
 
   // ── Route: Legal pages ────────────────────────────────────────────────────
-  if (currentView === 'terms') {
-    return (
-      <TermsPage
-        onBack={() => {
-          window.location.hash = '';
-          setCurrentView('portal');
-        }}
-      />
-    );
-  }
-  if (currentView === 'privacy') {
-    return (
-      <PrivacyPage
-        onBack={() => {
-          window.location.hash = '';
-          setCurrentView('portal');
-        }}
-      />
-    );
-  }
-
-  // ── Route: Landing Portal ─────────────────────────────────────────────────
-  if (currentView === 'portal') {
-    return (
-      <LandingPortal
-        onFileUpload={handlePortalFileUpload}
-        onLoadDemoConflict={handleSeedDemoConflict}
-        onPasteText={handlePasteText}
-        onLaunchConsole={() => setCurrentView('console')}
-        rejectionBanner={rejectionBanner}
-      />
-    );
-  }
-
-  // ── Route: Loading Screen ─────────────────────────────────────────────────
-  if (currentView === 'loading') {
-    const stage = LOADING_STAGES[loadingStageIdx] || LOADING_STAGES[0];
-    return <MunicipalLoader title={stage.title} subtitle={stage.subtitle} />;
-  }
-
-  // ── Route: 4D De-Confliction Command Center ───────────────────────────────
   const primaryClash = clashes[0];
   const isSynchronized =
     primaryClash?.is_synchronized || primaryClash?.severity === 'RESOLVED_JOINT_WINDOW';
 
+  // Filter corridors based on sidebar agency filter
+  const displayedCorridors = corridors.filter((c) => {
+    if (agencyFilter === 'ALL') return true;
+    const keywords: Record<string, string[]> = {
+      PWD: ['pwd', 'public works'],
+      KWA: ['kwa', 'water authority'],
+      KSEB: ['kseb', 'electricity board'],
+    };
+    const list = keywords[agencyFilter] || [];
+    return list.some((kw) => c.agency_name?.toLowerCase().includes(kw));
+  });
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw', overflow: 'hidden' }}>
+    <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', position: 'relative' }}>
+      <AnimatePresence mode="wait">
+        {currentView === 'portal' && (
+          <LandingPortal
+            key="portal"
+            onFileUpload={handlePortalFileUpload}
+            onLoadDemoConflict={handleSeedDemoConflict}
+            onPasteText={handlePasteText}
+            onLaunchConsole={() => setCurrentView('console')}
+            rejectionBanner={rejectionBanner}
+          />
+        )}
 
-      {/* ── Top Administrative Header ── */}
-      <header
-        style={{
-          height: '56px',
-          backgroundColor: '#0f172a',
-          color: '#ffffff',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '0 20px',
-          borderBottom: '1px solid #334155',
-          flexShrink: 0,
-          zIndex: 100,
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-
-          {/* ← Back to Portal breadcrumb */}
-          <button
-            onClick={() => setCurrentView('portal')}
-            style={{
-              backgroundColor: 'rgba(30,41,59,0.9)',
-              border: '1px solid #334155',
-              color: '#94a3b8',
-              padding: '5px 11px',
-              fontSize: '11.5px',
-              fontWeight: 500,
-              borderRadius: '3px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '5px',
-              transition: 'background-color 0.15s ease, color 0.15s ease',
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#1e293b';
-              (e.currentTarget as HTMLButtonElement).style.color = '#e2e8f0';
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'rgba(30,41,59,0.9)';
-              (e.currentTarget as HTMLButtonElement).style.color = '#94a3b8';
-            }}
-            title="Return to Landing Portal"
-          >
-            <ArrowLeft size={12} />
-            Portal
-          </button>
-
-          <div style={{ height: '18px', width: '1px', backgroundColor: '#334155' }} />
-
-          {/* Wordmark */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="22" height="22" fill="none">
-              <rect width="32" height="32" rx="4" fill="#0F172A" />
-              <path d="M16 4V28M4 16H28" stroke="#94A3B8" strokeWidth="2" strokeDasharray="2 2" />
-              <path d="M10 8L22 24" stroke="#F8FAFC" strokeWidth="3" strokeLinecap="square" />
-              <circle cx="10" cy="8" r="2.5" fill="#38BDF8" />
-              <circle cx="22" cy="24" r="2.5" fill="#EF4444" />
-            </svg>
-            <div style={{ fontSize: '14px', fontWeight: 700, letterSpacing: '0.02em', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              Dig-Once
-              <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 400 }}>
-                | 4D Command Center
-              </span>
-            </div>
-          </div>
-
-          <div style={{ height: '18px', width: '1px', backgroundColor: '#334155', margin: '0 4px' }} />
-
-          <span style={{ fontSize: '11px', backgroundColor: '#1e293b', color: '#cbd5e1', padding: '3px 8px', borderRadius: '2px', fontWeight: 500 }}>
-            Kochi Municipal Corporation (KMC)
-          </span>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '11px', color: '#94a3b8' }}>
-            <Database size={13} color={systemStatus?.postgis_connected ? '#22c55e' : '#f59e0b'} />
-            <span>PostGIS: {systemStatus?.postgis_connected ? 'Connected' : 'Connecting...'}</span>
-          </div>
-        </div>
-
-        {/* Right actions */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-
-          {/* Load Demo Conflict Pair */}
-          <button
-            onClick={handleSeedDemoConflict}
-            disabled={isSeedingDemo}
-            style={{
-              backgroundColor: '#dc2626',
-              color: '#ffffff',
-              border: '1px solid #b91c1c',
-              padding: '6px 14px',
-              fontSize: '12px',
-              fontWeight: 700,
-              borderRadius: '2px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              boxShadow: '0 1px 4px rgba(220,38,38,0.3)',
-              transition: 'all 0.15s ease',
-            }}
-            title="Seeds the canonical PWD resurfacing vs KWA water main conflict pair on MG Road"
-          >
-            <Sparkles size={14} />
-            {isSeedingDemo ? 'Seeding...' : 'Load Demo Conflict Pair'}
-          </button>
-
-          {/* Clash badge */}
-          {clashes.length > 0 && !isSynchronized && (
-            <button
-              onClick={() => setSelectedClash(primaryClash)}
-              style={{
-                backgroundColor: '#fee2e2',
-                color: '#dc2626',
-                border: '1px solid #f87171',
-                padding: '5px 10px',
-                fontSize: '11.5px',
-                fontWeight: 700,
-                borderRadius: '2px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-              }}
-            >
-              <AlertTriangle size={14} color="#dc2626" />
-              <span>1 Statutory Conflict (₹38.4L Risk)</span>
-            </button>
-          )}
-
-          {isSynchronized && (
-            <button
-              onClick={() => setSelectedClash(primaryClash)}
-              style={{
-                backgroundColor: '#e0f2fe',
-                color: '#0284c7',
-                border: '1px solid #7dd3fc',
-                padding: '5px 10px',
-                fontSize: '11.5px',
-                fontWeight: 700,
-                borderRadius: '2px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-              }}
-            >
-              <CheckCircle2 size={14} color="#0284c7" />
-              <span>Joint Window Locked (Electric Blue)</span>
-            </button>
-          )}
-
-          <button
-            onClick={() => setIsIngestModalOpen(true)}
-            className="btn-primary"
-            style={{ backgroundColor: '#ffffff', color: '#0f172a', borderColor: '#ffffff', padding: '6px 12px', fontSize: '12px' }}
-          >
-            <FileText size={14} />
-            Ingest Document
-          </button>
-
-          {corridors.length > 0 && (
-            <button
-              onClick={handleClearCorridors}
-              className="btn-secondary"
-              style={{ backgroundColor: '#1e293b', color: '#cbd5e1', borderColor: '#334155', padding: '6px 10px', fontSize: '12px' }}
-              title="Clear all plotted corridors from PostGIS"
-            >
-              <Trash2 size={13} />
-              Reset Map
-            </button>
-          )}
-
-          <div style={{ display: 'flex', gap: '10px', fontSize: '11.5px', marginLeft: '6px' }}>
-            <a href="#terms" onClick={() => setCurrentView('terms')} style={{ color: '#94a3b8', textDecoration: 'none' }}>Terms</a>
-            <a href="#privacy" onClick={() => setCurrentView('privacy')} style={{ color: '#94a3b8', textDecoration: 'none' }}>Privacy</a>
-          </div>
-        </div>
-      </header>
-
-      {/* ── Main Workspace ── */}
-      <div style={{ display: 'flex', flex: 1, position: 'relative', overflow: 'hidden' }}>
-
-        {/* Left Sidebar */}
-        <aside
-          style={{
-            width: '320px',
-            backgroundColor: '#ffffff',
-            borderRight: '1px solid #e2e8f0',
-            display: 'flex',
-            flexDirection: 'column',
-            zIndex: 10,
-            flexShrink: 0,
-          }}
-        >
+        {currentView === 'loading' && (
           <div
+            key="loading"
             style={{
-              padding: '12px 16px',
-              borderBottom: '1px solid #e2e8f0',
-              backgroundColor: '#f8fafc',
+              width: '100vw',
+              height: '100vh',
               display: 'flex',
-              justifyContent: 'space-between',
               alignItems: 'center',
+              justifyContent: 'center',
+              background: '#090d16',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 700, color: '#0f172a' }}>
-              <Layers size={15} />
-              <span>Municipal Registry ({corridors.length})</span>
-            </div>
-            {clashes.length > 0 && !isSynchronized ? (
-              <span className="badge" style={{ backgroundColor: '#fee2e2', color: '#dc2626', border: '1px solid #fca5a5' }}>
-                1 Conflict
-              </span>
-            ) : (
-              corridors.length > 0 && (
-                <span className="badge badge-surfacing">{corridors.length} Persisted</span>
-              )
-            )}
+            <MunicipalLoader
+              title={LOADING_STAGES[loadingStageIdx]?.title || 'Processing Tender...'}
+              subtitle={LOADING_STAGES[loadingStageIdx]?.subtitle || 'Executing algorithmic triage...'}
+            />
           </div>
+        )}
 
-          <div style={{ flex: 1, overflowY: 'auto', padding: '12px' }}>
-            {corridors.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '48px 16px', color: '#64748b', fontSize: '12px' }}>
-                <div style={{ fontWeight: 600, color: '#0f172a', marginBottom: '4px' }}>No Active Projects Plotted</div>
-                <p style={{ lineHeight: '1.5', marginBottom: '16px' }}>
-                  Click <b>[Load Demo Conflict Pair]</b> to see the PWD vs KWA conflict, or return to the Portal to ingest a tender.
-                </p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <button
-                    onClick={handleSeedDemoConflict}
-                    style={{
-                      width: '100%', backgroundColor: '#dc2626', color: '#ffffff',
-                      border: 'none', padding: '8px 14px', borderRadius: '2px',
-                      fontWeight: 700, cursor: 'pointer', display: 'flex',
-                      alignItems: 'center', justifyContent: 'center', gap: '6px',
-                    }}
-                  >
-                    <Sparkles size={14} />
-                    Load Demo Conflict Pair
-                  </button>
-                  <button
-                    onClick={() => setCurrentView('portal')}
-                    style={{
-                      width: '100%', backgroundColor: '#f8fafc', color: '#475569',
-                      border: '1px solid #e2e8f0', padding: '8px 14px', borderRadius: '2px',
-                      fontWeight: 600, cursor: 'pointer', display: 'flex',
-                      alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '12px',
-                    }}
-                  >
-                    <ArrowLeft size={13} />
-                    Back to Portal
-                  </button>
+        {currentView === 'console' && (
+          <motion.div
+            key="console"
+            initial={{ opacity: 0, scale: 0.985, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.985 }}
+            transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+            style={{ width: '100%', height: '100%', position: 'relative', overflow: 'hidden', backgroundColor: '#e2e8f0' }}
+          >
+            {/* ── 1. Floating Liquid Glass Top Header ── */}
+            <header
+              className="liquid-glass squircle-pill"
+              style={{
+                position: 'absolute',
+                top: '16px',
+                left: '20px',
+                right: '20px',
+                height: '56px',
+                zIndex: 1000,
+                padding: '0 20px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                borderRadius: '20px',
+              }}
+            >
+              {/* Left Brand */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                <button
+                  onClick={() => setCurrentView('portal')}
+                  className="liquid-glass-button squircle-pill"
+                  style={{
+                    background: 'rgba(15, 23, 42, 0.06)',
+                    border: '1px solid rgba(15, 23, 42, 0.12)',
+                    color: '#0f172a',
+                    padding: '6px 14px',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                  }}
+                >
+                  ← Portal
+                </button>
+
+                <div style={{ width: '1px', height: '20px', backgroundColor: 'rgba(0,0,0,0.1)' }} />
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '15px', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em' }}>
+                    Dig-Once
+                  </span>
+                  <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 500 }}>
+                    Command Center
+                  </span>
                 </div>
               </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {corridors.map((c, idx) => {
-                  const isSelected = activeCorridor?.tender_id === c.tender_id;
-                  const isSurfacing = c.project_type === 'SURFACING';
-                  return (
+
+              {/* Right Action Bar */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                {/* Apple Squircle Load Sample Button (Refined, no saturated red block) */}
+                <button
+                  onClick={handleSeedDemoConflict}
+                  disabled={isSeedingDemo}
+                  className="liquid-glass-button squircle-pill"
+                  style={{
+                    background: 'rgba(220, 38, 38, 0.08)',
+                    border: '1px solid rgba(220, 38, 38, 0.25)',
+                    color: '#dc2626',
+                    padding: '7px 16px',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                  }}
+                >
+                  <Play size={11} color="#dc2626" style={{ fill: '#dc2626' }} />
+                  {isSeedingDemo ? 'Seeding...' : 'Load Demo Conflict'}
+                </button>
+
+                {/* Ingest Tender Button */}
+                <button
+                  onClick={() => setIsIngestModalOpen(true)}
+                  className="squircle-pill"
+                  style={{
+                    backgroundColor: '#0f172a',
+                    color: '#ffffff',
+                    border: 'none',
+                    padding: '7px 16px',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    boxShadow: '0 4px 12px rgba(15,23,42,0.18)',
+                  }}
+                >
+                  <FileText size={13} />
+                  + Ingest Tender
+                </button>
+
+                {corridors.length > 0 && (
+                  <button
+                    onClick={handleClearCorridors}
+                    title="Clear all active layers"
+                    style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '10px',
+                      background: 'rgba(0,0,0,0.04)',
+                      border: '1px solid rgba(0,0,0,0.08)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      color: '#64748b',
+                    }}
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                )}
+
+                <div style={{ display: 'flex', gap: '10px', fontSize: '11.5px', marginLeft: '6px' }}>
+                  <a
+                    href="#terms"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      window.location.hash = '#terms';
+                      setCurrentView('terms');
+                    }}
+                    style={{ color: '#64748b', textDecoration: 'none' }}
+                  >
+                    Terms
+                  </a>
+                  <a
+                    href="#privacy"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      window.location.hash = '#privacy';
+                      setCurrentView('privacy');
+                    }}
+                    style={{ color: '#64748b', textDecoration: 'none' }}
+                  >
+                    Privacy
+                  </a>
+                </div>
+              </div>
+            </header>
+
+            {/* ── 2. Full-Bleed Map Canvas ── */}
+            <div style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}>
+              <MapViewer
+                corridors={corridors}
+                activeCorridor={activeCorridor}
+                onSelectCorridor={(c) => setActiveCorridor(c)}
+                clashes={clashes}
+                onOpenClashModal={(clash) => setSelectedClash(clash)}
+                currentMonthKey={currentMonthKey}
+                filterByMonth={filterByMonth}
+                agencyFilter={agencyFilter}
+              />
+            </div>
+
+            {/* ── 3. Floating Liquid Glass Squircle Sidebar ── */}
+            <aside
+              className="liquid-glass squircle-card"
+              style={{
+                position: 'absolute',
+                top: '88px',
+                left: '20px',
+                bottom: '96px',
+                width: '320px',
+                zIndex: 900,
+                display: 'flex',
+                flexDirection: 'column',
+                padding: '16px',
+                borderRadius: '24px',
+                overflow: 'hidden',
+              }}
+            >
+              {/* Sidebar Header */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Layers size={15} color="#0f172a" />
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#0f172a' }}>Municipal Registry</span>
+                </div>
+                <span
+                  className="squircle-pill"
+                  style={{
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    padding: '3px 9px',
+                    background: clashes.length > 0 && !isSynchronized ? 'rgba(220,38,38,0.1)' : 'rgba(22,163,74,0.1)',
+                    color: clashes.length > 0 && !isSynchronized ? '#dc2626' : '#16a34a',
+                    border: `1px solid ${clashes.length > 0 && !isSynchronized ? 'rgba(220,38,38,0.2)' : 'rgba(22,163,74,0.2)'}`,
+                  }}
+                >
+                  {clashes.length > 0 && !isSynchronized ? '1 Conflict' : `${displayedCorridors.length} Plotted`}
+                </span>
+              </div>
+
+              {/* Agency Segmented Filter */}
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(4, 1fr)',
+                  gap: '4px',
+                  background: 'rgba(0,0,0,0.05)',
+                  padding: '3px',
+                  borderRadius: '12px',
+                  marginBottom: '14px',
+                }}
+              >
+                {(['ALL', 'PWD', 'KWA', 'KSEB'] as const).map((ag) => (
+                  <button
+                    key={ag}
+                    onClick={() => setAgencyFilter(ag)}
+                    style={{
+                      padding: '5px 0',
+                      fontSize: '10.5px',
+                      fontWeight: agencyFilter === ag ? 700 : 500,
+                      borderRadius: '8px',
+                      border: 'none',
+                      cursor: 'pointer',
+                      background: agencyFilter === ag ? '#ffffff' : 'transparent',
+                      color: agencyFilter === ag ? '#0f172a' : '#64748b',
+                      boxShadow: agencyFilter === ag ? '0 2px 6px rgba(0,0,0,0.08)' : 'none',
+                      transition: 'all 0.15s ease',
+                    }}
+                  >
+                    {ag}
+                  </button>
+                ))}
+              </div>
+
+              {/* Corridor List */}
+              <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {displayedCorridors.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '40px 16px', color: '#64748b', fontSize: '12px' }}>
+                    <p style={{ margin: 0, fontWeight: 500 }}>No projects plotted</p>
+                    <span style={{ fontSize: '11px', color: '#94a3b8' }}>Click "Load Demo Conflict" above to inspect MG Road.</span>
+                  </div>
+                ) : (
+                  displayedCorridors.map((c, idx) => (
                     <div
                       key={idx}
                       onClick={() => setActiveCorridor(c)}
+                      className="squircle-pill"
                       style={{
-                        padding: '12px',
-                        border: isSelected ? '1px solid #0f172a' : '1px solid #e2e8f0',
-                        borderRadius: '2px',
-                        backgroundColor: isSelected ? '#f8fafc' : '#ffffff',
+                        padding: '12px 14px',
+                        background: activeCorridor?.tender_id === c.tender_id ? '#ffffff' : 'rgba(255,255,255,0.5)',
+                        border: activeCorridor?.tender_id === c.tender_id ? '1px solid rgba(15,23,42,0.2)' : '1px solid rgba(255,255,255,0.4)',
+                        borderRadius: '16px',
                         cursor: 'pointer',
+                        boxShadow: activeCorridor?.tender_id === c.tender_id ? '0 4px 14px rgba(0,0,0,0.06)' : 'none',
                         transition: 'all 0.15s ease',
                       }}
                     >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px' }}>
-                        <span
-                          className="badge"
-                          style={{
-                            backgroundColor: isSurfacing ? '#f0fdf4' : '#eff6ff',
-                            color: isSurfacing ? '#16a34a' : '#1d4ed8',
-                            border: `1px solid ${isSurfacing ? '#bbf7d0' : '#bfdbfe'}`,
-                          }}
-                        >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', color: c.project_type === 'SURFACING' ? '#16a34a' : '#2563eb' }}>
                           {c.project_type}
                         </span>
-                        <span style={{ fontSize: '10px', fontFamily: 'monospace', color: '#64748b' }}>{c.tender_id}</span>
+                        <span style={{ fontSize: '9.5px', color: '#94a3b8', fontFamily: 'monospace' }}>
+                          {c.tender_id}
+                        </span>
                       </div>
-                      <div style={{ fontSize: '13px', fontWeight: 600, color: '#0f172a', marginBottom: '2px' }}>{c.corridor_name}</div>
-                      <div style={{ fontSize: '11px', color: '#475569', marginBottom: '4px' }}>{c.agency_name}</div>
-                      <div style={{ fontSize: '10.5px', color: '#64748b', marginBottom: '6px' }}>
-                        {c.start_junction?.name || 'Start'} &rarr; {c.end_junction?.name || 'End'}
+                      <div style={{ fontSize: '12px', fontWeight: 700, color: '#0f172a', marginTop: '3px' }}>
+                        {c.corridor_name}
                       </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10.5px', color: '#64748b', borderTop: '1px solid #e2e8f0', paddingTop: '6px' }}>
-                        <span>Depth: {c.subsurface_depth_meters ?? 0}m</span>
-                        <span>{c.effective_start_date || c.projected_start_date}</span>
+                      <div style={{ fontSize: '11px', color: '#64748b' }}>
+                        {c.agency_name}
                       </div>
                     </div>
-                  );
-                })}
+                  ))
+                )}
               </div>
-            )}
-          </div>
+            </aside>
 
-          <div style={{ padding: '10px 14px', borderTop: '1px solid #e2e8f0', backgroundColor: '#f8fafc', fontSize: '11px', color: '#64748b' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
-              <ShieldCheck size={13} color="#16a34a" />
-              <span style={{ fontWeight: 600, color: '#0f172a' }}>PostGIS Spatial Persistence</span>
-            </div>
-            Pre-buffered 8m corridors with ST_Intersects &amp; 36-month DLP conflict checks.
-          </div>
-        </aside>
+            {/* ── 4. Timeline Scrubber (Docked at Bottom) ── */}
+            <TimelineScrubber
+              currentMonthKey={currentMonthKey}
+              onChangeMonth={(month) => setCurrentMonthKey(month)}
+              activeClashCount={clashes.length}
+              isSynchronized={isSynchronized}
+              filterByMonth={filterByMonth}
+              onToggleFilter={(f) => setFilterByMonth(f)}
+            />
+          </motion.div>
+        )}
 
-        {/* Map + Timeline */}
-        <main style={{ flex: 1, height: '100%', position: 'relative', overflow: 'hidden' }}>
-          <MapViewer
-            corridors={corridors}
-            activeCorridor={activeCorridor}
-            onSelectCorridor={(c) => setActiveCorridor(c)}
-            clashes={clashes}
-            onOpenClashModal={(clash) => setSelectedClash(clash)}
-            currentMonthKey={currentMonthKey}
-            filterByMonth={filterByMonth}
+        {currentView === 'terms' && (
+          <TermsPage
+            key="terms"
+            onBack={() => {
+              window.location.hash = '';
+              setCurrentView('console');
+            }}
           />
-          <TimelineScrubber
-            currentMonthKey={currentMonthKey}
-            onChangeMonth={(month) => setCurrentMonthKey(month)}
-            activeClashCount={clashes.length}
-            isSynchronized={isSynchronized}
-            filterByMonth={filterByMonth}
-            onToggleFilter={(f) => setFilterByMonth(f)}
+        )}
+        {currentView === 'privacy' && (
+          <PrivacyPage
+            key="privacy"
+            onBack={() => {
+              window.location.hash = '';
+              setCurrentView('console');
+            }}
           />
-        </main>
-      </div>
+        )}
+      </AnimatePresence>
 
       {/* Ingest Modal */}
       <IngestModal
@@ -636,7 +609,7 @@ export function App() {
         />
       )}
 
-      {/* Conflict Drawer */}
+      {/* Conflict Proposal Drawer */}
       {selectedClash && (
         <ConflictProposalDrawer
           isOpen={Boolean(selectedClash)}

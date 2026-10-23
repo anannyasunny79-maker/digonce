@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import { CheckCircle2, ShieldAlert } from 'lucide-react';
 
@@ -31,6 +31,8 @@ export interface CorridorRecord {
   };
 }
 
+export type AgencyFilter = 'ALL' | 'PWD' | 'KWA' | 'KSEB';
+
 interface MapViewerProps {
   corridors: CorridorRecord[];
   activeCorridor: CorridorRecord | null;
@@ -39,6 +41,7 @@ interface MapViewerProps {
   onOpenClashModal?: (clash: any) => void;
   currentMonthKey?: string;
   filterByMonth?: boolean;
+  agencyFilter?: AgencyFilter;
 }
 
 export const MapViewer: React.FC<MapViewerProps> = ({
@@ -48,22 +51,12 @@ export const MapViewer: React.FC<MapViewerProps> = ({
   clashes,
   onOpenClashModal,
   currentMonthKey,
-  filterByMonth = false
+  filterByMonth = false,
+  agencyFilter = 'ALL'
 }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const layersGroupRef = useRef<L.FeatureGroup | null>(null);
-
-  type AgencyFilter = 'ALL' | 'PWD' | 'KWA' | 'KSEB' | 'CLASHES_ONLY';
-  const [agencyFilter, setAgencyFilter] = useState<AgencyFilter>('ALL');
-
-  const FILTER_LABELS: { key: AgencyFilter; label: string }[] = [
-    { key: 'ALL', label: 'All Agencies' },
-    { key: 'PWD', label: 'PWD Roads' },
-    { key: 'KWA', label: 'KWA Water' },
-    { key: 'KSEB', label: 'KSEB Electrical' },
-    { key: 'CLASHES_ONLY', label: 'Active Clashes Only' },
-  ];
 
   useEffect(() => {
     if (!mapContainerRef.current || mapInstanceRef.current) return;
@@ -137,18 +130,13 @@ export const MapViewer: React.FC<MapViewerProps> = ({
       displayCorridors = corridors;
     }
 
-    // Apply agency / clash filter
-    const clashingTenderIds = new Set<string>(
-      clashes.flatMap((cl: any) => [cl.project_a_id, cl.project_b_id]).filter(Boolean)
-    );
+    // Apply agency filter
     const agencyKeywords: Record<string, string[]> = {
       PWD: ['pwd', 'public works'],
       KWA: ['kwa', 'water authority'],
       KSEB: ['kseb', 'electricity board'],
     };
-    if (agencyFilter === 'CLASHES_ONLY') {
-      displayCorridors = displayCorridors.filter(c => clashingTenderIds.has(c.tender_id));
-    } else if (agencyFilter !== 'ALL') {
+    if (agencyFilter !== 'ALL') {
       const keywords = agencyKeywords[agencyFilter] || [];
       displayCorridors = displayCorridors.filter(c =>
         keywords.some(kw => c.agency_name.toLowerCase().includes(kw))
@@ -336,99 +324,54 @@ export const MapViewer: React.FC<MapViewerProps> = ({
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
       <div ref={mapContainerRef} style={{ width: '100%', height: '100%' }} />
 
-      {/* Top Map Status Legend Overlay */}
+      {/* Map Status Legend Dock (Floating next to sidebar above scrubber, no collisions) */}
       <div
+        className="liquid-glass squircle-pill"
         style={{
           position: 'absolute',
-          top: '16px',
-          left: '16px',
+          bottom: '96px',
+          left: '360px',
           zIndex: 900,
-          backgroundColor: '#ffffff',
-          border: '1px solid #cbd5e1',
-          borderRadius: '2px',
-          padding: '8px 12px',
+          padding: '6px 14px',
           fontSize: '11px',
           display: 'flex',
           alignItems: 'center',
           gap: '12px',
-          boxShadow: '0 2px 6px rgba(0,0,0,0.08)'
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-          <div style={{ width: '12px', height: '3px', backgroundColor: '#16a34a' }} />
+          <div style={{ width: '12px', height: '3px', backgroundColor: '#16a34a', borderRadius: '1px' }} />
           <span style={{ color: '#334155', fontWeight: 600 }}>PWD Paving (Oct)</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-          <div style={{ width: '12px', height: '3px', backgroundColor: '#2563eb' }} />
+          <div style={{ width: '12px', height: '3px', backgroundColor: '#2563eb', borderRadius: '1px' }} />
           <span style={{ color: '#334155', fontWeight: 600 }}>KWA Water Main (Dec)</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-          <div style={{ width: '12px', height: '4px', backgroundColor: '#dc2626' }} />
-          <span style={{ color: '#dc2626', fontWeight: 700 }}>Active Clash</span>
+          <div style={{ width: '12px', height: '3px', backgroundColor: '#dc2626', borderRadius: '1px' }} />
+          <span style={{ color: '#dc2626', fontWeight: 700 }}>Active Conflict</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-          <div style={{ width: '12px', height: '4px', backgroundColor: '#0284c7' }} />
-          <span style={{ color: '#0284c7', fontWeight: 700 }}>Synchronized (Locked)</span>
+          <div style={{ width: '12px', height: '3px', backgroundColor: '#0284c7', borderRadius: '1px' }} />
+          <span style={{ color: '#0284c7', fontWeight: 700 }}>Synchronized</span>
         </div>
-      </div>
-
-      {/* Agency / Clash Filter Bar */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '60px',
-          left: '16px',
-          zIndex: 900,
-          display: 'flex',
-          gap: '2px',
-          backgroundColor: '#ffffff',
-          border: '1px solid #cbd5e1',
-          borderRadius: '2px',
-          padding: '3px',
-          boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
-          flexWrap: 'wrap'
-        }}
-      >
-        {FILTER_LABELS.map(({ key, label }) => (
-          <button
-            key={key}
-            onClick={() => setAgencyFilter(key)}
-            style={{
-              padding: '4px 10px',
-              fontSize: '10.5px',
-              fontWeight: agencyFilter === key ? 700 : 500,
-              fontFamily: 'inherit',
-              border: 'none',
-              borderRadius: '1px',
-              cursor: 'pointer',
-              backgroundColor: agencyFilter === key
-                ? (key === 'CLASHES_ONLY' ? '#dc2626' : '#0f172a')
-                : 'transparent',
-              color: agencyFilter === key ? '#ffffff' : '#475569',
-              transition: 'background-color 0.12s ease, color 0.12s ease',
-              whiteSpace: 'nowrap'
-            }}
-          >
-            {label}
-          </button>
-        ))}
       </div>
 
       {/* Floating Clash Alert Badge with Grounded Economic Quantification (₹38,40,000) */}
       {hasActiveClash && !isSynchronized && (
         <div
           onClick={() => onOpenClashModal && onOpenClashModal(primaryClash)}
+          className="liquid-glass squircle-card"
           style={{
             position: 'absolute',
-            top: '16px',
-            right: '16px',
+            top: '88px',
+            right: '20px',
             zIndex: 900,
-            backgroundColor: '#ffffff',
-            border: '2px solid #dc2626',
-            borderRadius: '2px',
-            padding: '10px 14px',
+            border: '1.5px solid #dc2626',
+            borderRadius: '20px',
+            padding: '12px 18px',
             cursor: 'pointer',
-            boxShadow: '0 4px 14px rgba(220,38,38,0.25)',
+            boxShadow: '0 16px 40px -10px rgba(220,38,38,0.25)',
             display: 'flex',
             alignItems: 'center',
             gap: '12px',
@@ -456,17 +399,17 @@ export const MapViewer: React.FC<MapViewerProps> = ({
       {isSynchronized && (
         <div
           onClick={() => onOpenClashModal && onOpenClashModal(primaryClash)}
+          className="liquid-glass squircle-card"
           style={{
             position: 'absolute',
-            top: '16px',
-            right: '16px',
+            top: '88px',
+            right: '20px',
             zIndex: 900,
-            backgroundColor: '#ffffff',
-            border: '2px solid #0284c7',
-            borderRadius: '2px',
-            padding: '10px 14px',
+            border: '1.5px solid #0284c7',
+            borderRadius: '20px',
+            padding: '12px 18px',
             cursor: 'pointer',
-            boxShadow: '0 4px 14px rgba(2,132,199,0.2)',
+            boxShadow: '0 16px 40px -10px rgba(2,132,199,0.2)',
             display: 'flex',
             alignItems: 'center',
             gap: '12px'

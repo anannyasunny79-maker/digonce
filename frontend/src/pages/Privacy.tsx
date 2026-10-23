@@ -1,48 +1,138 @@
-export const PrivacyPage = ({ onBack }: { onBack: () => void }) => {
+import React from 'react';
+import { Shield, ArrowLeft, Lock, Database, EyeOff, FileText } from 'lucide-react';
+
+export const PrivacyPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   return (
-    <div className="max-w-4xl mx-auto px-6 py-10 font-sans text-slate-800">
-      <div className="mb-6 flex items-center justify-between border-b border-slate-200 pb-4">
-        <h1 className="text-xl font-bold text-slate-900 tracking-tight">Privacy Policy</h1>
-        <button
-          onClick={onBack}
-          className="border border-slate-300 bg-white text-slate-700 px-4 py-2 text-sm font-medium hover:bg-slate-50 transition-colors"
-          style={{ borderRadius: '2px' }}
-        >
-          Return to Console
-        </button>
-      </div>
+    <div
+      style={{
+        minHeight: '100vh',
+        width: '100%',
+        background:
+          'linear-gradient(180deg, rgba(15,23,42,0.50) 0%, rgba(15,23,42,0.85) 100%), url("/bg.jpeg") center/cover no-repeat fixed',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        padding: '40px 20px',
+        fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif'
+      }}
+    >
+      {/* ── Liquid Glass Squircle Container ── */}
+      <div
+        className="liquid-glass squircle-card"
+        style={{
+          width: '100%',
+          maxWidth: '820px',
+          padding: '40px 48px',
+          borderRadius: '32px',
+          position: 'relative'
+        }}
+      >
+        {/* Top Breadcrumb & Action */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px' }}>
+          <button
+            onClick={onBack}
+            className="liquid-glass-button squircle-pill"
+            style={{
+              padding: '8px 16px',
+              fontSize: '12px',
+              fontWeight: 600,
+              color: '#0f172a',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+          >
+            <ArrowLeft size={13} />
+            Return to Console
+          </button>
 
-      <div className="bg-white border border-slate-200 p-8 text-sm leading-relaxed text-slate-700 space-y-6">
-        <div>
-          <p className="text-xs text-slate-500 font-mono">Last updated: October 2026</p>
+          <span
+            className="squircle-pill"
+            style={{
+              fontSize: '11px',
+              fontWeight: 600,
+              color: '#64748b',
+              background: 'rgba(0,0,0,0.04)',
+              padding: '4px 12px'
+            }}
+          >
+            Statutory Document • Oct 2026
+          </span>
         </div>
 
-        <div>
-          <h2 className="text-base font-semibold text-slate-900 mb-2">1. Information Collected</h2>
-          <p>
-            Dig-Once processes publicly accessible municipal e-procurement notices, statutory Right-of-Way (RoW) permit applications, and public infrastructure GIS datasets.
-          </p>
+        {/* Title & Badge */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '8px' }}>
+          <div
+            style={{
+              width: '44px',
+              height: '44px',
+              borderRadius: '14px',
+              background: 'rgba(15,23,42,0.06)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            <Shield size={24} color="#0f172a" />
+          </div>
+          <div>
+            <h1 style={{ fontSize: '26px', fontWeight: 800, color: '#0f172a', margin: 0, letterSpacing: '-0.02em' }}>
+              Privacy & Data Policy
+            </h1>
+            <p style={{ fontSize: '13px', color: '#64748b', margin: '2px 0 0' }}>
+              Governance framework for municipal tender ingestion and spatial telemetry.
+            </p>
+          </div>
         </div>
 
-        <div>
-          <h2 className="text-base font-semibold text-slate-900 mb-2">2. Personal Data</h2>
-          <p>
-            The platform does not collect, track, or monetize personal citizen data. Account data for administrative users is limited to municipal email addresses and departmental credentials for authentication purposes.
-          </p>
-        </div>
+        <div style={{ width: '100%', height: '1px', backgroundColor: 'rgba(0,0,0,0.08)', margin: '24px 0 28px' }} />
 
-        <div>
-          <h2 className="text-base font-semibold text-slate-900 mb-2">3. Ingestion Logs</h2>
-          <p>
-            Uploaded tender documents and extracted spatial features are retained within sandboxed municipal project databases to maintain historical audit logs of infrastructure coordination proposals.
-          </p>
-        </div>
-
-        <div>
-          <h2 className="text-base font-semibold text-slate-900 mb-2">4. Third-Party Processing</h2>
-          <p>
-            Document entity extraction requests processed via partner inference endpoints are strictly governed by enterprise non-retention agreements. No proprietary municipal data is utilized for external model training.
-          </p>
+        {/* Sections Grid */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
+          {[
+            {
+              icon: Database,
+              title: '1. Ingestion of Public Procurement Notices',
+              text: 'Dig-Once operates exclusively on publicly accessible municipal e-procurement gazettes, statutory Right-of-Way (RoW) permit queues, and open geographic layers. The system does not harvest, store, or profile confidential private citizen records.'
+            },
+            {
+              icon: EyeOff,
+              title: '2. Personal Identity Non-Retention',
+              text: 'Administrative user sessions are strictly sandboxed. Engineering access credentials and official municipal emails are utilized solely for audit logging of joint synchronization proposals under the Kerala Highway Protection Act.'
+            },
+            {
+              icon: Lock,
+              title: '3. Model Inference & Non-Training Guarantees',
+              text: 'Statutory tender documents processed via partner LLM inference endpoints operate under zero-retention enterprise agreements. Public sector civil specifications are never utilized for model training or commercial data syndication.'
+            },
+            {
+              icon: FileText,
+              title: '4. Immutable Audit Ledger',
+              text: 'Draft synchronization proposals and cost avoidance calculations are cryptographically hashed (e.g., KOCHI-SYNC-...) to preserve inter-agency transparency between PWD, KWA, KSEB, and municipal executive leadership.'
+            }
+          ].map(({ icon: Icon, title, text }) => (
+            <div
+              key={title}
+              className="squircle-pill"
+              style={{
+                padding: '20px',
+                background: 'rgba(255,255,255,0.6)',
+                border: '1px solid rgba(255,255,255,0.7)',
+                borderRadius: '18px'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
+                <Icon size={16} color="#0f172a" />
+                <h3 style={{ fontSize: '14.5px', fontWeight: 700, color: '#0f172a', margin: 0 }}>
+                  {title}
+                </h3>
+              </div>
+              <p style={{ fontSize: '13px', color: '#475569', lineHeight: 1.6, margin: 0, paddingLeft: '26px' }}>
+                {text}
+              </p>
+            </div>
+          ))}
         </div>
       </div>
     </div>

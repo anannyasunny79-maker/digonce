@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Pause, ChevronLeft, ChevronRight, Calendar, AlertOctagon, CheckCircle2, ShieldAlert } from 'lucide-react';
+import { Play, Pause, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export interface TimelineMonth {
   key: string;       // e.g. "2026-10"
@@ -36,7 +36,6 @@ interface TimelineScrubberProps {
 export const TimelineScrubber: React.FC<TimelineScrubberProps> = ({
   currentMonthKey,
   onChangeMonth,
-  activeClashCount,
   isSynchronized = false,
   filterByMonth,
   onToggleFilter
@@ -67,53 +66,6 @@ export const TimelineScrubber: React.FC<TimelineScrubberProps> = ({
 
   const currentMonth = TIMELINE_MONTHS[currentIndex] || TIMELINE_MONTHS[9];
 
-  // Derive civil engineering status message based on active month
-  let statusBadge = {
-    text: 'Baseline Municipal Planning Window',
-    color: '#64748b',
-    bgColor: '#f1f5f9',
-    icon: <Calendar size={13} color="#64748b" />
-  };
-
-  if (isSynchronized) {
-    statusBadge = {
-      text: 'Synchronized Joint Infrastructure Window Locked (KWA Pipes Oct-Nov → PWD Paving Nov-Dec)',
-      color: '#0284c7',
-      bgColor: '#e0f2fe',
-      icon: <CheckCircle2 size={13} color="#0284c7" />
-    };
-  } else if (currentMonthKey === '2026-10') {
-    statusBadge = {
-      text: 'Phase A Active: Kerala PWD Road Resurfacing on MG Road (Paving Course underway)',
-      color: '#16a34a',
-      bgColor: '#dcfce7',
-      icon: <CheckCircle2 size={13} color="#16a34a" />
-    };
-  } else if (currentMonthKey === '2026-11') {
-    statusBadge = {
-      text: 'Phase A Completed: PWD 36-Month Defect Liability Period (DLP Statutory Warranty Activated)',
-      color: '#d97706',
-      bgColor: '#fef3c7',
-      icon: <ShieldAlert size={13} color="#d97706" />
-    };
-  } else if (currentMonthKey === '2026-12' || currentMonthKey === '2027-01') {
-    if (activeClashCount > 0) {
-      statusBadge = {
-        text: 'CRITICAL CLASH: KWA Water Main Trenching breaches PWD 36-Month Statutory Warranty! (Destruction of New Asphalt)',
-        color: '#dc2626',
-        bgColor: '#fee2e2',
-        icon: <AlertOctagon size={13} color="#dc2626" />
-      };
-    } else {
-      statusBadge = {
-        text: 'Phase B Active: Kerala Water Authority Water Main Replacement',
-        color: '#0284c7',
-        bgColor: '#e0f2fe',
-        icon: <Calendar size={13} color="#0284c7" />
-      };
-    }
-  }
-
   return (
     <div
       style={{
@@ -121,17 +73,17 @@ export const TimelineScrubber: React.FC<TimelineScrubberProps> = ({
         bottom: 0,
         left: 0,
         right: 0,
-        height: '84px',
-        backgroundColor: 'rgba(15, 23, 42, 0.96)',
-        backdropFilter: 'blur(8px)',
-        borderTop: '1px solid #334155',
+        height: '76px',
+        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        backdropFilter: 'blur(12px)',
+        borderTop: '1px solid #cbd5e1',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
-        padding: '8px 24px 10px',
+        padding: '8px 24px 8px',
         zIndex: 1000,
-        color: '#ffffff',
-        boxShadow: '0 -4px 20px rgba(0,0,0,0.3)'
+        color: '#0f172a',
+        boxShadow: '0 -2px 10px rgba(0,0,0,0.06)'
       }}
     >
       {/* Top Status & Controls Bar */}
@@ -142,10 +94,10 @@ export const TimelineScrubber: React.FC<TimelineScrubberProps> = ({
           <button
             onClick={() => setIsPlaying(!isPlaying)}
             style={{
-              backgroundColor: isPlaying ? '#ef4444' : '#38bdf8',
-              color: isPlaying ? '#ffffff' : '#0f172a',
+              backgroundColor: isPlaying ? '#dc2626' : '#0f172a',
+              color: '#ffffff',
               border: 'none',
-              borderRadius: '3px',
+              borderRadius: '2px',
               padding: '4px 10px',
               fontSize: '11px',
               fontWeight: 700,
@@ -164,9 +116,9 @@ export const TimelineScrubber: React.FC<TimelineScrubberProps> = ({
           <button
             onClick={handlePrev}
             style={{
-              backgroundColor: '#1e293b',
-              color: '#cbd5e1',
-              border: '1px solid #475569',
+              backgroundColor: '#f1f5f9',
+              color: '#334155',
+              border: '1px solid #cbd5e1',
               borderRadius: '2px',
               padding: '3px 6px',
               cursor: 'pointer'
@@ -179,9 +131,9 @@ export const TimelineScrubber: React.FC<TimelineScrubberProps> = ({
           <button
             onClick={handleNext}
             style={{
-              backgroundColor: '#1e293b',
-              color: '#cbd5e1',
-              border: '1px solid #475569',
+              backgroundColor: '#f1f5f9',
+              color: '#334155',
+              border: '1px solid #cbd5e1',
               borderRadius: '2px',
               padding: '3px 6px',
               cursor: 'pointer'
@@ -191,43 +143,20 @@ export const TimelineScrubber: React.FC<TimelineScrubberProps> = ({
             <ChevronRight size={14} />
           </button>
 
-          <div style={{ fontSize: '12px', fontWeight: 700, color: '#f8fafc', marginLeft: '6px' }}>
+          <div style={{ fontSize: '13px', fontWeight: 700, color: '#0f172a', marginLeft: '6px' }}>
             {currentMonth.label}
           </div>
         </div>
 
-        {/* Civil Operations Real-time Status Banner */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            backgroundColor: statusBadge.bgColor,
-            color: statusBadge.color,
-            padding: '3px 10px',
-            borderRadius: '2px',
-            fontSize: '11px',
-            fontWeight: 600,
-            border: `1px solid ${statusBadge.color}40`,
-            maxWidth: '650px',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap'
-          }}
-        >
-          {statusBadge.icon}
-          <span>{statusBadge.text}</span>
-        </div>
-
         {/* Temporal Filter Mode Toggle */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px' }}>
-          <span style={{ color: '#94a3b8' }}>Filter Mode:</span>
+          <span style={{ color: '#64748b' }}>Filter:</span>
           <button
             onClick={() => onToggleFilter(!filterByMonth)}
             style={{
-              backgroundColor: filterByMonth ? '#0284c7' : '#334155',
-              color: '#ffffff',
-              border: 'none',
+              backgroundColor: filterByMonth ? '#0f172a' : '#f1f5f9',
+              color: filterByMonth ? '#ffffff' : '#475569',
+              border: '1px solid #cbd5e1',
               borderRadius: '2px',
               padding: '3px 8px',
               fontSize: '10.5px',
@@ -235,7 +164,7 @@ export const TimelineScrubber: React.FC<TimelineScrubberProps> = ({
               cursor: 'pointer'
             }}
           >
-            {filterByMonth ? 'Month Active Only' : 'All Projects Plotted'}
+            {filterByMonth ? 'Active Month Only' : 'All Projects'}
           </button>
         </div>
 
@@ -252,7 +181,7 @@ export const TimelineScrubber: React.FC<TimelineScrubberProps> = ({
             left: '0',
             right: '0',
             height: '3px',
-            backgroundColor: '#334155',
+            backgroundColor: '#e2e8f0',
             borderRadius: '2px'
           }}
         />
@@ -298,12 +227,12 @@ export const TimelineScrubber: React.FC<TimelineScrubberProps> = ({
                     height: isSelected ? '14px' : '9px',
                     borderRadius: '50%',
                     backgroundColor: isSelected
-                      ? '#38bdf8'
-                      : (isDec && !isSynchronized ? '#ef4444' : (isOct ? '#22c55e' : (isNov ? '#f59e0b' : '#64748b'))),
-                    border: isSelected ? '2px solid #ffffff' : '1px solid #0f172a',
-                    boxShadow: isSelected ? '0 0 10px #38bdf8' : 'none',
+                      ? '#0f172a'
+                      : (isDec && !isSynchronized ? '#ef4444' : (isOct ? '#16a34a' : (isNov ? '#d97706' : '#94a3b8'))),
+                    border: '1px solid #ffffff',
+                    boxShadow: isSelected ? '0 0 6px rgba(15,23,42,0.4)' : 'none',
                     transition: 'all 0.15s ease',
-                    marginBottom: '4px'
+                    marginBottom: '3px'
                   }}
                 />
 
@@ -311,8 +240,8 @@ export const TimelineScrubber: React.FC<TimelineScrubberProps> = ({
                 <span
                   style={{
                     fontSize: isSelected ? '11px' : '10px',
-                    fontWeight: isSelected ? 700 : (isOct || isNov || isDec ? 600 : 400),
-                    color: isSelected ? '#38bdf8' : (isDec ? '#f87171' : (isOct ? '#86efac' : '#94a3b8'))
+                    fontWeight: isSelected ? 700 : 500,
+                    color: isSelected ? '#0f172a' : '#64748b'
                   }}
                 >
                   {m.shortName}

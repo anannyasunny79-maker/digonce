@@ -303,3 +303,47 @@ body {
 .animate-fade-in-up {
   animation: fadeInUp 0.35s ease forwards;
 }
+
+/* ── Apple Liquid Glass & Squircle Design System ── */
+.liquid-glass {
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(28px) saturate(190%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.08),
+              inset 0 1px 1.5px rgba(255, 255, 255, 0.9);
+}
+
+.liquid-glass-dark {
+  background: rgba(15, 23, 42, 0.62);
+  backdrop-filter: blur(28px) saturate(190%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.4),
+              inset 0 1px 1px rgba(255, 255, 255, 0.22);
+}
+
+.liquid-glass-button {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1),
+              inset 0 1px 1px rgba(255, 255, 255, 0.35);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.liquid-glass-button:hover {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.35);
+  transform: translateY(-1px);
+}
+
+.squircle-card {
+  border-radius: 24px;
+}
+
+.squircle-pill {
+  border-radius: 16px;
+}
+
