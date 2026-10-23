@@ -65,13 +65,6 @@ export const MapViewer: React.FC<MapViewerProps> = ({
     { key: 'CLASHES_ONLY', label: 'Active Clashes Only' },
   ];
 
-  /** Maps agency filter key → partial agency_name match strings */
-  const AGENCY_KEYWORDS: Record<string, string[]> = {
-    PWD: ['pwd', 'public works'],
-    KWA: ['kwa', 'water authority'],
-    KSEB: ['kseb', 'electricity board'],
-  };
-
   useEffect(() => {
     if (!mapContainerRef.current || mapInstanceRef.current) return;
 
