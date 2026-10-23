@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import { CheckCircle2, ShieldAlert } from 'lucide-react';
 
@@ -53,6 +53,24 @@ export const MapViewer: React.FC<MapViewerProps> = ({
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const layersGroupRef = useRef<L.FeatureGroup | null>(null);
+
+  type AgencyFilter = 'ALL' | 'PWD' | 'KWA' | 'KSEB' | 'CLASHES_ONLY';
+  const [agencyFilter, setAgencyFilter] = useState<AgencyFilter>('ALL');
+
+  const FILTER_LABELS: { key: AgencyFilter; label: string }[] = [
+    { key: 'ALL', label: 'All Agencies' },
+    { key: 'PWD', label: 'PWD Roads' },
+    { key: 'KWA', label: 'KWA Water' },
+    { key: 'KSEB', label: 'KSEB Electrical' },
+    { key: 'CLASHES_ONLY', label: 'Active Clashes Only' },
+  ];
+
+  /** Maps agency filter key → partial agency_name match strings */
+  const AGENCY_KEYWORDS: Record<string, string[]> = {
+    PWD: ['pwd', 'public works'],
+    KWA: ['kwa', 'water authority'],
+    KSEB: ['kseb', 'electricity board'],
+  };
 
   useEffect(() => {
     if (!mapContainerRef.current || mapInstanceRef.current) return;
@@ -124,6 +142,24 @@ export const MapViewer: React.FC<MapViewerProps> = ({
     if (displayCorridors.length === 0 && corridors.length > 0 && filterByMonth) {
       // If nothing directly active in that month, show lighter baseline
       displayCorridors = corridors;
+    }
+
+    // Apply agency / clash filter
+    const clashingTenderIds = new Set<string>(
+      clashes.flatMap((cl: any) => [cl.project_a_id, cl.project_b_id]).filter(Boolean)
+    );
+    const agencyKeywords: Record<string, string[]> = {
+      PWD: ['pwd', 'public works'],
+      KWA: ['kwa', 'water authority'],
+      KSEB: ['kseb', 'electricity board'],
+    };
+    if (agencyFilter === 'CLASHES_ONLY') {
+      displayCorridors = displayCorridors.filter(c => clashingTenderIds.has(c.tender_id));
+    } else if (agencyFilter !== 'ALL') {
+      const keywords = agencyKeywords[agencyFilter] || [];
+      displayCorridors = displayCorridors.filter(c =>
+        keywords.some(kw => c.agency_name.toLowerCase().includes(kw))
+      );
     }
 
     const bounds = L.latLngBounds([]);
@@ -297,7 +333,7 @@ export const MapViewer: React.FC<MapViewerProps> = ({
     if (bounds.isValid()) {
       map.fitBounds(bounds, { padding: [70, 70], maxZoom: 16 });
     }
-  }, [corridors, activeCorridor, clashes, currentMonthKey, filterByMonth]);
+  }, [corridors, activeCorridor, clashes, currentMonthKey, filterByMonth, agencyFilter]);
 
   const hasActiveClash = clashes.length > 0;
   const primaryClash = clashes[0];
@@ -341,6 +377,48 @@ export const MapViewer: React.FC<MapViewerProps> = ({
           <div style={{ width: '12px', height: '4px', backgroundColor: '#0284c7' }} />
           <span style={{ color: '#0284c7', fontWeight: 700 }}>Synchronized (Locked)</span>
         </div>
+      </div>
+
+      {/* Agency / Clash Filter Bar */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '60px',
+          left: '16px',
+          zIndex: 900,
+          display: 'flex',
+          gap: '2px',
+          backgroundColor: '#ffffff',
+          border: '1px solid #cbd5e1',
+          borderRadius: '2px',
+          padding: '3px',
+          boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
+          flexWrap: 'wrap'
+        }}
+      >
+        {FILTER_LABELS.map(({ key, label }) => (
+          <button
+            key={key}
+            onClick={() => setAgencyFilter(key)}
+            style={{
+              padding: '4px 10px',
+              fontSize: '10.5px',
+              fontWeight: agencyFilter === key ? 700 : 500,
+              fontFamily: 'inherit',
+              border: 'none',
+              borderRadius: '1px',
+              cursor: 'pointer',
+              backgroundColor: agencyFilter === key
+                ? (key === 'CLASHES_ONLY' ? '#dc2626' : '#0f172a')
+                : 'transparent',
+              color: agencyFilter === key ? '#ffffff' : '#475569',
+              transition: 'background-color 0.12s ease, color 0.12s ease',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            {label}
+          </button>
+        ))}
       </div>
 
       {/* Floating Clash Alert Badge with Grounded Economic Quantification (₹38,40,000) */}

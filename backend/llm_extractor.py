@@ -3,18 +3,90 @@ import re
 from datetime import datetime, date
 from typing import Optional
 from openai import OpenAI
-from backend.schemas import (
-    TenderExtractionResponse,
-    ExtractedField,
-    ExtractedDateField,
-    ExtractedFloatField
-)
+
+try:
+    from backend.schemas import (
+        TenderClassification,
+        TenderExtractionResponse,
+        ExtractedField,
+        ExtractedDateField,
+        ExtractedFloatField,
+    )
+except ImportError:
+    from schemas import (
+        TenderClassification,
+        TenderExtractionResponse,
+        ExtractedField,
+        ExtractedDateField,
+        ExtractedFloatField,
+    )
 
 def _find_exact_substring(text: str, pattern: str) -> Optional[str]:
     match = re.search(pattern, text, re.IGNORECASE)
     if match:
         return text[match.start():match.end()]
     return None
+
+# --- Malayalam road-name transliterations used in Step 1 & 2 ---
+_MALAYALAM_ROAD_MAP = {
+    "\u0d2e\u0d3e\u0d7c\u0d15\u0d4d\u0d15\u0d31\u0d4d\u0d31\u0d4d \u0d31\u0d4b\u0d21\u0d4d": "Market Road",
+    "\u0d0e\u0d02\u0d1c\u0d3f \u0d31\u0d4b\u0d21\u0d4d": "MG Road",
+    "\u0d2e\u0d39\u0d3e\u0d24\u0d4d\u0d2e \u0d17\u0d3e\u0d28\u0d4d\u0d27\u0d3f \u0d31\u0d4b\u0d21\u0d4d": "Mahatma Gandhi Road",
+    "\u0d2c\u0d3e\u0d28\u0d7c\u0d1c\u0d3f \u0d31\u0d4b\u0d21\u0d4d": "Banerji Road",
+    "\u0d15\u0d3e\u0d32\u0d42\u0d7c \u0d1c\u0d02\u0d17\u0d4d\u0d37\u0d4d\u0d37\u0d28\u0d4d": "Kaloor Junction",
+}
+
+# Non-civil keyword signals used by the rule-based gatekeeper
+_NONCIVIL_GOODS_PATTERNS = [
+    r"(utensil|steel\s+vessel|kitchen\s+equipment|cookware|office\s+suppl|vehicle\s+part|spare\s+part|furniture|stationery)",
+    r"(supply\s+of\s+goods|procurement\s+of\s+materials|purchase\s+of)",
+]
+_NONCIVIL_MEDICAL_PATTERNS = [
+    r"(reagent|cbc\s+analyzer|hematology|pathology|laboratory\s+consumable|medical\s+supply|hospital\s+supply|diagnostic\s+kit)",
+]
+_NONCIVIL_LEASE_PATTERNS = [
+    r"(lease|rent|auction|license\s+fee|permit\s+fee)\s+(of|for|on)",
+    r"(park|playground|market\s+stall|commercial\s+space|shop\s+room)\s+(on|at|along)",
+]
+_CIVIL_POSITIVE_PATTERNS = [
+    r"(road\s+cut|road\s+opening|trenching|excavat|paving|resurfac|bituminous|pipeline|water\s+main|sewer|duct|underground\s+cable|milling|wearing\s+course)",
+]
+
+
+def _classify_rule_based(raw_text: str) -> TenderClassification:
+    """Fast regex-based gatekeeper — runs before entity extraction."""
+    text_lower = raw_text.lower()
+
+    for pat in _NONCIVIL_MEDICAL_PATTERNS:
+        if re.search(pat, text_lower, re.IGNORECASE):
+            return TenderClassification(
+                is_civil_infrastructure=False,
+                category="MEDICAL_CONSUMABLE",
+                rejection_reason="Document is for medical/laboratory consumables. No Right-of-Way disruption.",
+            )
+
+    for pat in _NONCIVIL_LEASE_PATTERNS:
+        if re.search(pat, text_lower, re.IGNORECASE):
+            return TenderClassification(
+                is_civil_infrastructure=False,
+                category="ASSET_LEASE",
+                rejection_reason="Document is a lease/auction of an asset. No subsurface excavation.",
+            )
+
+    # Goods supply — only flag if there is NO civil positive signal
+    has_civil = any(re.search(p, text_lower, re.IGNORECASE) for p in _CIVIL_POSITIVE_PATTERNS)
+    if not has_civil:
+        for pat in _NONCIVIL_GOODS_PATTERNS:
+            if re.search(pat, text_lower, re.IGNORECASE):
+                return TenderClassification(
+                    is_civil_infrastructure=False,
+                    category="GOODS_SUPPLY",
+                    rejection_reason="Document is for goods procurement with no civil roadwork scope.",
+                )
+
+    # Default: treat as civil infrastructure
+    return TenderClassification(is_civil_infrastructure=True, category="CIVIL_ROADWORK")
+
 
 def fallback_rule_parser(raw_text: str) -> TenderExtractionResponse:
     """
@@ -198,7 +270,10 @@ def fallback_rule_parser(raw_text: str) -> TenderExtractionResponse:
         except Exception:
             pass
 
+    classification = _classify_rule_based(raw_text)
+
     return TenderExtractionResponse(
+        classification=classification,
         tender_id=tender_id,
         agency_name=ExtractedField(value=agency_val, confidence=agency_conf, evidence_span=agency_span),
         project_type=ExtractedField(value=p_type_val, confidence=p_type_conf, evidence_span=p_type_span),
@@ -214,21 +289,47 @@ def fallback_rule_parser(raw_text: str) -> TenderExtractionResponse:
 
 def parse_tender_text(raw_text: str, custom_api_key: Optional[str] = None) -> TenderExtractionResponse:
     """
-    Step 2: Information Extractor using gpt-4o-mini with strict JSON mode.
-    If no API key is provided or if network error occurs, seamlessly falls back
-    to the high-fidelity deterministic rule parser.
+    Two-step information extractor.
+
+    STEP 1 — Classify: Determine if the tender involves civil infrastructure
+              (road cutting, pipeline, duct, sewer) or is non-civil (goods
+              supply, medical consumables, asset lease). Malayalam documents
+              are handled transparently.
+    STEP 2 — Extract: Only if is_civil_infrastructure=True, extract spatial
+              entities (junctions, corridor, dates, depth). Malayalam road
+              names are transliterated to standard English equivalents.
+
+    Falls back to the deterministic rule parser when no API key is available.
     """
     api_key = custom_api_key or os.getenv("OPENAI_API_KEY")
     if api_key and api_key.startswith("sk-"):
         try:
             client = OpenAI(api_key=api_key)
             system_prompt = (
-                "You are a municipal contract data parser. Extract project parameters from the provided tender. "
-                "Rules:\n"
-                "1. Do not invent dates or depths if they are not in the text.\n"
-                "2. If a date is relative (e.g., 'within 6 months of work order'), put that text into relative_duration_text and leave projected dates null.\n"
-                "3. Provide the exact substring in evidence_span where you found the value.\n"
-                "4. Output strictly according to the JSON schema."
+                "You are an expert municipal procurement classifier for Kerala Urban Local Bodies "
+                "(handling both English and Malayalam administrative documents).\n\n"
+
+                "STEP 1: CLASSIFY FIRST\n"
+                "- If the document is for supplying goods (e.g., utensils, office supplies, vehicle parts), "
+                "set is_civil_infrastructure=False and category='GOODS_SUPPLY'.\n"
+                "- If the document is for hospital or clinic consumables (e.g., CBC analyzer reagents, "
+                "laboratory kits), set is_civil_infrastructure=False and category='MEDICAL_CONSUMABLE'.\n"
+                "- If the document is a lease, rent, or auction of an asset (even if located on a road, "
+                "like Mekkara Park on Market Road), set is_civil_infrastructure=False and category='ASSET_LEASE'.\n"
+                "- ONLY set is_civil_infrastructure=True if heavy machinery will physically alter, trench, "
+                "or pave a public roadway or Right-of-Way.\n"
+                "- Set rejection_reason to a concise English explanation when is_civil_infrastructure=False.\n\n"
+
+                "STEP 2: EXTRACT ENTITIES (Only if is_civil_infrastructure=True)\n"
+                "- Translate Malayalam road names to standard English "
+                "(e.g., '\u0d2e\u0d3e\u0d7c\u0d15\u0d4d\u0d15\u0d31\u0d4d\u0d31\u0d4d \u0d31\u0d4b\u0d21\u0d4d' -> 'Market Road', "
+                "'\u0d0e\u0d02\u0d1c\u0d3f \u0d31\u0d4b\u0d21\u0d4d' -> 'MG Road').\n"
+                "- Extract start/end junctions, corridor name, depth, and duration.\n"
+                "- Do not invent dates or depths if they are not in the text.\n"
+                "- If a date is relative (e.g., 'within 6 months of work order'), put that text into "
+                "relative_duration_text and leave projected dates null.\n"
+                "- Provide the exact substring in evidence_span where you found the value.\n"
+                "- Output strictly according to the JSON schema."
             )
             completion = client.beta.chat.completions.parse(
                 model="gpt-4o-mini",

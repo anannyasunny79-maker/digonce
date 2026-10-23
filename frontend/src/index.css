@@ -202,18 +202,59 @@ body {
 }
 
 @media print {
-  .no-print {
+  /* Hide everything except the printable proposal */
+  .no-print,
+  nav,
+  header,
+  .map-container,
+  .leaflet-container,
+  .leaflet-control-container,
+  .timeline-scrubber,
+  .sidebar,
+  .modal-overlay > *:not(#printable-proposal) {
     display: none !important;
   }
-  body, html {
+
+  /* Force white page */
+  html, body {
     background: #ffffff !important;
     color: #000000 !important;
-  }
-  #printable-proposal {
+    margin: 0 !important;
     padding: 0 !important;
+  }
+
+  /* Break proposal out of modal & fill the page */
+  #printable-proposal {
+    position: static !important;
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: none !important;
+    overflow: visible !important;
+    padding: 24px 32px !important;
     margin: 0 !important;
     box-shadow: none !important;
     border: none !important;
+    border-radius: 0 !important;
+    font-size: 11pt !important;
+    line-height: 1.5 !important;
+  }
+
+  /* Ensure tables don't break across pages awkwardly */
+  table {
+    page-break-inside: avoid;
+  }
+
+  /* Signature block stays together */
+  .sign-off-block {
+    page-break-inside: avoid;
+    margin-top: 32pt !important;
+  }
+
+  /* Remove link underlines */
+  a {
+    text-decoration: none !important;
+    color: inherit !important;
   }
 }
 

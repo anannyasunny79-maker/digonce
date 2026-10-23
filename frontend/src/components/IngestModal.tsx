@@ -27,6 +27,7 @@ export const IngestModal: React.FC<IngestModalProps> = ({
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [rejectedTender, setRejectedTender] = useState<{ category: string; reason: string } | null>(null);
 
   // Fetch samples on open
   useEffect(() => {
@@ -64,8 +65,17 @@ export const IngestModal: React.FC<IngestModalProps> = ({
         throw new Error(err.detail || 'Failed to process tender PDF');
       }
       const data = await response.json();
-      onExtractionReady(data.raw_text, data.extraction);
-      onClose();
+      const classification = data.extraction?.classification;
+      if (classification && !classification.is_civil_infrastructure) {
+        setRejectedTender({
+          category: classification.category,
+          reason: classification.rejection_reason || 'Non-civil document excluded from RoW grid.'
+        });
+      } else {
+        setRejectedTender(null);
+        onExtractionReady(data.raw_text, data.extraction);
+        onClose();
+      }
     } catch (err: any) {
       setErrorMessage(err.message || 'Error occurred while extracting PDF data.');
     } finally {
@@ -95,8 +105,17 @@ export const IngestModal: React.FC<IngestModalProps> = ({
         throw new Error(err.detail || 'Failed to parse tender text');
       }
       const data = await response.json();
-      onExtractionReady(data.raw_text, data.extraction);
-      onClose();
+      const classification = data.extraction?.classification;
+      if (classification && !classification.is_civil_infrastructure) {
+        setRejectedTender({
+          category: classification.category,
+          reason: classification.rejection_reason || 'Non-civil document excluded from RoW grid.'
+        });
+      } else {
+        setRejectedTender(null);
+        onExtractionReady(data.raw_text, data.extraction);
+        onClose();
+      }
     } catch (err: any) {
       setErrorMessage(err.message || 'Error parsing text snippet.');
     } finally {
@@ -227,6 +246,58 @@ export const IngestModal: React.FC<IngestModalProps> = ({
               }}
             >
               {errorMessage}
+            </div>
+          )}
+
+          {/* Gatekeeper Rejection Banner */}
+          {rejectedTender && (
+            <div
+              style={{
+                backgroundColor: '#fffbeb',
+                border: '2px solid #f59e0b',
+                borderRadius: '2px',
+                padding: '12px 16px',
+                marginBottom: '16px',
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '12px'
+              }}
+            >
+              <div style={{
+                backgroundColor: '#fef3c7',
+                borderRadius: '50%',
+                padding: '6px',
+                flexShrink: 0,
+                fontSize: '16px',
+                lineHeight: 1
+              }}>⚠️</div>
+              <div>
+                <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', color: '#92400e', letterSpacing: '0.05em', marginBottom: '3px' }}>
+                  Non-Civil Tender: {rejectedTender.category.replace(/_/g, ' ')}
+                </div>
+                <div style={{ fontSize: '12.5px', fontWeight: 600, color: '#78350f', marginBottom: '4px' }}>
+                  {rejectedTender.reason}
+                </div>
+                <div style={{ fontSize: '11px', color: '#92400e' }}>
+                  Skipped from RoW Spatial Grid. No map entry created.
+                </div>
+                <button
+                  onClick={() => setRejectedTender(null)}
+                  style={{
+                    marginTop: '8px',
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    color: '#92400e',
+                    background: 'none',
+                    border: '1px solid #f59e0b',
+                    borderRadius: '2px',
+                    padding: '3px 10px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Dismiss & Try Another Document
+                </button>
+              </div>
             </div>
           )}
 
