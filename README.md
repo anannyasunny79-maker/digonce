@@ -177,11 +177,12 @@ Access the application dashboard at `http://localhost:5173`.
 
 ## Product Demo
 
-<<<<<<< HEAD
 * **Live API Backend:** [https://digonce-fn9g.onrender.com/api/health](https://digonce-fn9g.onrender.com/api/health)
 * **Corridor Endpoint:** [https://digonce-fn9g.onrender.com/api/corridors](https://digonce-fn9g.onrender.com/api/corridors)
 * **Clashes Endpoint:** [https://digonce-fn9g.onrender.com/api/clashes](https://digonce-fn9g.onrender.com/api/clashes)
-=======
+
+### Feature Roadmap
+
 - [x] Automated civil tender classification and structured data extraction
 - [x] Text citation extraction and confidence indicators
 - [x] Local road network gazetteer and OSMnx graph routing
@@ -292,7 +293,6 @@ Contributions and feedback are welcome:
 2. Create a feature branch (`git checkout -b feature/improvement`).
 3. Commit and test modifications.
 4. Submit a pull request detailing the changes.
->>>>>>> 76c2fa4 (feat: implement NNA THAN KUZHIK brand identity, interactive product tour & dual-mode resilience)
 
 ---
 

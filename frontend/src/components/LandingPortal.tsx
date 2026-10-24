@@ -162,28 +162,19 @@ export const LandingPortal: React.FC<LandingPortalProps> = ({
         )}
 
         {/* Visual Brand Identity - NNA THAN KUZHIK */}
-        <div
+        <img
+          src="/logo_whte.png"
+          alt="Nna Than Kuzhik"
           style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginBottom: '16px',
-            maxHeight: '19vh',
+            height: 'auto',
+            width: 'auto',
+            maxHeight: '280px',
+            maxWidth: '380px',
+            objectFit: 'contain',
+            marginBottom: '20px',
+            filter: 'drop-shadow(0 10px 25px rgba(0, 0, 0, 0.5))'
           }}
-        >
-          <img
-            src="/logo_whte.png"
-            alt="NNA THAN KUZHIK - Municipal De-Confliction"
-            style={{
-              maxHeight: '18vh',
-              width: 'auto',
-              maxWidth: '260px',
-              objectFit: 'contain',
-              filter: 'drop-shadow(0 8px 30px rgba(0,0,0,0.5))',
-            }}
-          />
-        </div>
+        />
 
         {/* ── Liquid Glass Squircle Upload Container ── */}
         <div
