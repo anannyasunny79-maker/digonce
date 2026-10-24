@@ -2,92 +2,59 @@
 
 # Dig-Once
 
-### **AI-Powered Municipal Infrastructure Coordination Platform**
+### **AI-Powered 4D Municipal Infrastructure Orchestration & Spatial De-Confliction Platform**
 
 *Plan once. Coordinate before digging. Build smarter cities.*
 
 <br/>
 
-Dig-Once is a civic-tech platform designed to help municipal authorities and public utility agencies identify overlapping roadwork, coordinate infrastructure projects, and reduce avoidable road excavation and restoration costs.
-
-<br/>
-
 <p align="center">
+  <a href="https://digonce-fn9g.onrender.com/api/health">
+    <img src="https://img.shields.io/badge/Live%20API-Operational-success?style=for-the-badge&logo=render&logoColor=white" alt="Live API" />
+  </a>
   <img src="https://img.shields.io/badge/Frontend-React%20%7C%20Vite-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React and Vite" />
   <img src="https://img.shields.io/badge/Backend-FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI" />
   <img src="https://img.shields.io/badge/Database-PostgreSQL%20%7C%20PostGIS-336791?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostGIS" />
-  <img src="https://img.shields.io/badge/AI-Document%20Intelligence-7C3AED?style=for-the-badge" alt="AI document intelligence" />
+  <img src="https://img.shields.io/badge/AI-GPT--4o--mini-7C3AED?style=for-the-badge" alt="AI document intelligence" />
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Domain-Civic%20Tech-blue?style=flat-square" alt="Civic tech" />
   <img src="https://img.shields.io/badge/Focus-Smart%20Infrastructure-green?style=flat-square" alt="Smart infrastructure" />
-  <img src="https://img.shields.io/badge/Region-Kerala%2C%20India-orange?style=flat-square" alt="Kerala, India" />
+  <img src="https://img.shields.io/badge/Hackathon-AIBoomi%20Startup%20Weekend-blueviolet?style=flat-square" alt="AIBoomi Startup Weekend" />
+  <img src="https://img.shields.io/badge/Status-MVP%20Ready-success?style=flat-square" alt="Status" />
 </p>
+
+[Live API Health](https://digonce-fn9g.onrender.com/api/health) • [Active Corridors](https://digonce-fn9g.onrender.com/api/corridors) • [Evaluated Clashes](https://digonce-fn9g.onrender.com/api/clashes)
 
 </div>
 
 ---
 
-## The Problem
+## Problem Statement
 
-A municipal road may be resurfaced by the Public Works Department, only to be excavated weeks later for a water pipeline, electrical cable, or telecommunications installation.
-
-* **Fiscal Loss:** Substantial avoidable public expenditure spent repeatedly re-paving the same corridors.
-* **Civic Disruption:** Severe traffic congestion, degraded pavement quality, and increased dust and particulate emissions.
-* **Agency Silos:** Infrastructure works are planned, budgeted, and tendered independently, making it difficult to detect spatial and temporal overlaps prior to on-site execution.
+City roads are frequently resurfaced by public works authorities, only to be excavated weeks later by water, power, or telecommunications agencies. This lack of inter-agency synchronization voids road warranties, wastes millions in public taxpayer funds, and causes severe traffic gridlock.
 
 ---
 
-## The Solution
+## Users & Context
 
-**Dig-Once** establishes a unified spatial and temporal coordination layer across public infrastructure stakeholders.
-
-The platform ingests tender documentation, classifies civil engineering works, maps project corridors onto road network graphs, evaluates spatial and timeline conflicts, quantifies restoration costs at risk, and enables authorities to establish synchronized joint execution schedules.
-
-> **Core Principle:** Coordinate subsurface utility installation prior to completing final surface pavement.
+* **Municipal Commissioners & Urban Planners:** Overseeing civic capital budgets, road-cutting permits, and enforcing municipal de-confliction policies.
+* **Utility Agency Engineers (PWD, KWA, KSEB, Telecom):** Uploading tender notices, identifying planned works by other agencies, and scheduling synchronized excavation windows.
+* **Citizens & Commuters:** Benefiting from reduced traffic bottlenecks, preserved road surfaces, and minimized civic disruption.
 
 ---
 
-## Key Features
+## Solution Overview
 
-* **1. Automated Tender Intelligence**
-  * Structured information extraction from municipal tender documents.
-  * Identification of project classifications (road resurfacing, water mains, sewerage, utility ducting).
-  * Extraction of spatial bounds, projected work periods, subsurface depths, and key milestones.
-  * Automated filtering of non-civil and general procurement notices.
-  * Confidence scoring and automated triage for items requiring human verification.
+**Dig-Once** is an enterprise-grade 4D spatio-temporal infrastructure orchestration platform that ingests unstructured municipal tender PDFs, projects planned works onto routable road graphs, identifies subsurface overlaps before work orders are executed, and automatically reschedules projects into unified joint digging windows.
 
-* **2. Geospatial Road Network Mapping**
-  * Resolution of local landmark descriptions to geographic coordinates via gazetteers and geocoding.
-  * Corridor projection along routable street networks derived from OpenStreetMap.
-  * True centerline routing using graph algorithms rather than Euclidean approximation.
-  * Geospatial footprint analysis across municipal infrastructure projects.
+The platform is designed around three core operational pillars:
+1. **Automated NLP Ingestion:** Extraction of tender boundaries, chainages, subsurface depths, and execution schedules from unstructured PDFs.
+2. **PostGIS 4D Spatial De-confliction:** Automated 8-meter corridor polygon buffering and intersection queries across routable road graphs (OSMnx/NetworkX) to flag temporal and warranty clashes.
+3. **Autonomous Cost Avoidance & Synchronization:** Enforcing statutory 36-month Defect Liability Period (DLP) guardrails and sequencing works by physical depth hierarchy (deep utilities first, surface wearing course second).
 
-* **3. Spatio-Temporal Conflict Detection**
-  * Automated polygon buffering along active work corridors.
-  * Overlap length and geometric intersection quantification using PostGIS.
-  * Cross-agency timeline comparison to detect concurrent excavation windows.
-  * Defect Liability Period (DLP) compliance monitoring for recently paved corridors.
-
-* **4. Restoration Cost Quantification**
-  * Standardized economic quantification based on official Schedules of Rates (e.g., KPWD SoR).
-  * Parameterized calculation using overlap length, excavation trench width, and restoration unit rates.
-  * Identification of avoidable capital expenditure to support capital budgeting and prioritization.
-
-* **5. Coordinated Sequencing and Scheduling**
-  * Depth-hierarchy scheduling: prioritizing deep subsurface utilities before surface wearing course installation.
-  * Joint excavation window proposals for inter-departmental review.
-  * Structured review and sign-off workflows for authorized municipal engineers.
-
-* **6. Municipal Decision Dashboard**
-  * Centralized spatial visualization of active, planned, and conflicting corridors.
-  * Granular status segmentation (Normal, Active Clash, Review Required, Synchronized).
-  * Evidence-backed records to support inter-agency coordination meetings.
-
----
-
-## System Architecture
+### System Architecture
 
 ```text
 ┌────────────────────────────────────────────────────────┐
@@ -116,183 +83,103 @@ Supporting frameworks: OpenAI API (GPT-4o-mini), pdfplumber, OSMnx, NetworkX
 
 ---
 
-## Technology Stack
-
-| Layer | Technologies |
-| :--- | :--- |
-| **Frontend** | React, Vite, Tailwind CSS, Leaflet |
-| **Backend** | Python, FastAPI, Uvicorn |
-| **Document Processing** | pdfplumber |
-| **AI Extraction** | OpenAI API, GPT-4o-mini |
-| **Data Validation** | Pydantic |
-| **Database** | PostgreSQL, PostGIS |
-| **Geospatial Processing** | OSMnx, NetworkX |
-| **Spatial Data** | OpenStreetMap (OSM) |
-| **Database Infrastructure** | Supabase |
-| **Geocoding** | Local Gazetteer, SerpAPI Fallback |
-
----
-
-## Operational Workflow
-
-1. **Document Ingestion:** Municipal tender notices or scope-of-work documents are submitted in PDF or plain text format.
-2. **Classification:** The pipeline evaluates whether the notice pertains to physical civil excavation or surface roadwork.
-3. **Entity Extraction:** LLM extraction identifies tender ID, executing agency, project corridor, landmark boundaries, subsurface depth, and schedules.
-4. **Verification:** Ambiguous junction names, uncertain dates, or low-confidence outputs are routed for user confirmation.
-5. **Spatial Projection:** Verified corridors are matched against the local road network graph and saved as PostGIS geometries.
-6. **Conflict Evaluation:** Spatial intersection queries evaluate corridor buffer collisions and active warranty / Defect Liability Period breaches.
-7. **Cost Modeling:** Avoidable restoration costs are computed using configured trench dimensions and municipal restoration rate schedules.
-8. **Resequencing:** Authorities evaluate suggested execution windows to consolidate separate excavations into a unified digging period.
-
----
-
-## Getting Started
+## Setup & Run
 
 ### Prerequisites
-* Python 3.11 or later
-* Node.js 18 or later with npm
-* PostgreSQL instance with PostGIS extension enabled (e.g., Supabase)
-* OpenAI API key
-* SerpAPI key (optional fallback for non-gazetteer junction lookup)
-
----
+* Python 3.11+
+* Node.js 18+ and npm
+* PostgreSQL 15+ with PostGIS extension enabled (or Supabase)
+* OpenAI API Key
+* SerpAPI Key (optional fallback for non-gazetteer landmark resolution)
 
 ### 1. Clone the Repository
-
 ```bash
 git clone https://github.com/anannyasunny79-maker/digonce.git
 cd digonce
 ```
 
----
-
-### 2. Backend Setup
-
+### 2. Backend Setup (`/backend`)
 ```bash
 cd backend
 python -m venv venv
 
-# Activate virtual environment
-# Windows:
+# On Windows:
 venv\Scripts\activate
-
-# macOS / Linux:
+# On macOS/Linux:
 source venv/bin/activate
 
-# Install dependencies
 pip install -r requirements.txt
 ```
 
-Create an environment configuration file `.env` inside `backend/`:
-
+Create `.env` inside `backend/`:
 ```env
 DATABASE_URL=postgresql://user:password@host:5432/postgres
 OPENAI_API_KEY=your_openai_api_key
 SERPAPI_API_KEY=your_serpapi_api_key
 ```
 
-Start the API service:
-
+Run the backend server:
 ```bash
 uvicorn main:app --reload --port 8000
 ```
+Interactive API documentation: `http://localhost:8000/docs`
 
-Interactive OpenAPI documentation is available at:
-`http://localhost:8000/docs`
-
----
-
-### 3. Frontend Setup
-
-From the repository root:
-
+### 3. Frontend Setup (`/frontend`)
 ```bash
-cd frontend
+cd ../frontend
 npm install
 npm run dev
 ```
-
-The application interface will be accessible at:
-`http://localhost:5173`
+Access the application dashboard at `http://localhost:5173`.
 
 ---
 
-### 4. Database Setup
+## Models & Data
 
-Ensure the PostGIS extension is initialized:
-
-```sql
-CREATE EXTENSION IF NOT EXISTS postgis;
-```
-
-Database tables and indexes are initialized automatically on backend startup via `database.py`.
-
----
-
-## Reliability and Risk Management
-
-Dig-Once is an advisory decision-support platform designed to assist municipal authorities and licensed engineers; it does not replace statutory permissions or engineering sign-offs.
-
-* **Evidence-Based Extraction:** Extracted attributes maintain traceability to source document text spans.
-* **Human-in-the-Loop Review:** Low-confidence extraction outputs require engineer review prior to schedule modification.
-* **Procurement Filtering:** Non-civil contracts (e.g., equipment leases, general supplies) are filtered to avoid false positive triggers.
-* **Parameter Configurability:** Defect Liability Periods, trench dimensions, and unit restoration rates remain user-configurable against prevailing municipal schedules.
-* **Credential Protection:** Secrets and connection URIs are managed through environment variables and excluded from version control.
+* **Document Intelligence Model:** OpenAI GPT-4o-mini structured entity extraction pipeline parsing unstructured PDF tender notices with strict Pydantic schemas.
+* **Spatial Road Graph:** Routable road network for Kochi generated via OSMnx and NetworkX, serialized as GraphML (`kochi_drive.graphml`).
+* **Spatial Database:** PostgreSQL 15 with PostGIS spatial extension utilizing GIST spatial indexing (`USING GIST(geom_buffer)`).
+* **Data Sources & Licenses:**
+  * OpenStreetMap contributors (ODbL) for street network graph data.
+  * Public municipal tender sample notices (open government notices).
+  * Kerala PWD Schedule of Rates (KPWD SoR) for standard asphalt restoration metrics.
 
 ---
 
-## Current Limitations
+## Evaluation & Guardrails
 
-* Optical Character Recognition (OCR) is required for scanned, image-only PDF notices lacking digital text layers.
-* Ambiguous landmark names may require manual disambiguation.
-* Geocoding fallbacks are subject to third-party API availability and rate quotas.
-* Geometric overlap indicates potential spatial conflict; engineering feasibility of joint utility trenches remains subject to on-site clearance standards.
-
----
-
-## Target Use Cases
-
-* Municipal Corporations and Urban Local Bodies (ULBs)
-* State Public Works Departments (Roads and Bridges divisions)
-* Water Supply and Sewerage Boards
-* Electricity Distribution Utilities and Underground Cabling Projects
-* Telecom and City Gas Distribution Infrastructure Providers
-* Smart City Integrated Command and Control Centers (ICCC)
+* **Hallucination Mitigation:** Strict Pydantic schema validation forces the extraction model to cite exact textual evidence quotes from the source document. Extractions failing validation or confidence thresholds are flagged for human triage.
+* **Non-Civil Procurement Filtering:** Automated binary classification filters out non-civil procurement (e.g., equipment leases, office supplies) to prevent false-positive excavation triggers.
+* **Deterministic Spatial Geometry:** Spatial calculations are executed deterministically in PostGIS (using `ST_Intersects`, `ST_Buffer`, and `ST_Length`) rather than relying on LLMs for geometric calculations.
+* **Connection Security:** Uses Supabase connection pooling with strict environment variable management to prevent credential exposure.
 
 ---
 
-## Project Roadmap
+## Known Limitations & Risks
 
-- [x] Automated civil tender classification and structured data extraction
-- [x] Text citation extraction and confidence indicators
-- [x] Local road network gazetteer and OSMnx graph routing
-- [x] PostGIS corridor buffering and spatial intersection analysis
-- [x] Schedule of Rates cost quantification model
-- [ ] Visual project synchronization calendar and Gantt viewer
-- [ ] Automated inter-agency joint coordination proposal exports
-- [ ] Versioned audit logs with municipal commissioner sign-off tracking
-- [ ] Multi-city graph ingestion across Indian urban centers
+* **Image-Only Scans:** Scanned or low-resolution image-based PDFs without digital text layers require an OCR preprocessing stage prior to text parsing.
+* **Landmark Ambiguity:** Unindexed colloquial junction names require geocoding confirmation or human verification.
+* **External API Latencies:** Geocoding fallback services are subject to third-party rate quotas; mitigated by an internal high-speed local gazetteer.
+* **Engineering Feasibility:** The system flags potential spatial clashes; final joint utility trench construction feasibility remains subject to site-level engineering clearance.
 
 ---
 
-## Team: Nfinits
+## Team
 
-| Name | Role | Responsibilities |
-| :--- | :--- | :--- |
-| **Sreehari K** | Backend & GIS Lead | Full-stack architecture, spatial GIS engine, PostGIS integration, and routing |
-| **Anannya Sunny** | Frontend & Product Lead | Product design, UI/UX engineering, frontend integration, and NLP extraction |
+**Team Nfinits** (Built for AIBoomi Startup Weekend):
 
-*For queries, feature requests, or technical issues, please submit a GitHub Issue.*
+| Name | Role | Responsibilities | Contact |
+| :--- | :--- | :--- | :--- |
+| **Sreehari K** | Full-Stack Architecture & Backend Lead | Spatial GIS Engine, PostGIS Integration, OSMnx Graph Routing, API Services | Phone: `+91 8075342892`<br>Email: `ksreehari84m@gmail.com` |
+| **Anannya Sunny** | UI/UX & Frontend Integration Lead | Product Design, Map Viewer, Frontend State Management, NLP Pipeline | Phone: `+91 9496209573`<br>Email: `anannyasunny79@gmail.com` |
 
 ---
 
-## Contributing
+## Product Demo
 
-Contributions and feedback are welcome:
-1. Fork the repository.
-2. Create a feature branch (`git checkout -b feature/improvement`).
-3. Commit and test modifications.
-4. Submit a pull request detailing the changes.
+* **Live API Backend:** [https://digonce-fn9g.onrender.com/api/health](https://digonce-fn9g.onrender.com/api/health)
+* **Corridor Endpoint:** [https://digonce-fn9g.onrender.com/api/corridors](https://digonce-fn9g.onrender.com/api/corridors)
+* **Clashes Endpoint:** [https://digonce-fn9g.onrender.com/api/clashes](https://digonce-fn9g.onrender.com/api/clashes)
 
 ---
 
@@ -305,6 +192,6 @@ This project is licensed under the **MIT License**. See the `LICENSE` file for d
 <div align="center">
 
 **Dig-Once: Municipal Infrastructure Spatial De-Confliction Platform**  
-*Developed for coordinated public infrastructure planning.*
+*Coordinating public civil infrastructure before capital is spent.*
 
 </div>
