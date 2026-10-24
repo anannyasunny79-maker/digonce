@@ -8,7 +8,12 @@ from typing import Dict, Any, List, Optional, Tuple
 import psycopg2
 from psycopg2.extras import RealDictCursor
 
-DB_URL = os.getenv("DATABASE_URL", "postgresql://postgres:postgrespassword@localhost:5432/digonce_municipal")
+DB_URL = (
+    os.getenv("DATABASE_URL")
+    or os.getenv("SUPABASE_DB_URL")
+    or os.getenv("SUPABASE_DATABASE_URL")
+    or "postgresql://postgres.xwpcxdeoyxeiscdgazsz:Nfintscodere@aws-0-ap-south-1.pooler.supabase.com:5432/postgres"
+)
 
 # KPWD Schedule of Rates constants
 STANDARD_TRENCH_WIDTH_METERS = 1.2  # 1.2m standard water main trench
@@ -18,11 +23,13 @@ def get_connection():
     return psycopg2.connect(DB_URL)
 
 def init_db():
-    """Ensure table and spatial indexes are properly initialized."""
+    """Ensure PostGIS tables (municipal_projects, conflicts) and spatial indexes are properly initialized."""
     conn = get_connection()
     try:
         with conn.cursor() as cur:
             cur.execute("CREATE EXTENSION IF NOT EXISTS postgis;")
+            
+            # 1. municipal_projects table
             cur.execute("""
                 CREATE TABLE IF NOT EXISTS municipal_projects (
                     id SERIAL PRIMARY KEY,
@@ -35,7 +42,7 @@ def init_db():
                     projected_end_date DATE NOT NULL,
                     dlp_months INTEGER DEFAULT 36,
                     estimated_cost_inr NUMERIC(12,2) NOT NULL,
-                    corridor_geom GEOMETRY(LineString, 4326) NOT NULL,
+                    corridor_geom GEOMETRY(Geometry, 4326) NOT NULL,
                     geom_buffer GEOMETRY(Polygon, 4326) NOT NULL,
                     status VARCHAR(32) DEFAULT 'PENDING_APPROVAL',
                     start_junction VARCHAR(128),
@@ -51,8 +58,33 @@ def init_db():
                 CREATE INDEX IF NOT EXISTS idx_municipal_projects_geom_buffer ON municipal_projects USING GIST(geom_buffer);
                 CREATE INDEX IF NOT EXISTS idx_municipal_projects_corridor_geom ON municipal_projects USING GIST(corridor_geom);
             """)
+
+            # 2. conflicts table
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS conflicts (
+                    id SERIAL PRIMARY KEY,
+                    conflict_id VARCHAR(64) UNIQUE,
+                    project_a_id INTEGER REFERENCES municipal_projects(id) ON DELETE CASCADE,
+                    project_b_id INTEGER REFERENCES municipal_projects(id) ON DELETE CASCADE,
+                    corridor_name VARCHAR(255),
+                    overlap_length_m NUMERIC(10,2),
+                    avoidable_restoration_cost_inr NUMERIC(14,2),
+                    severity VARCHAR(64),
+                    status VARCHAR(32) DEFAULT 'ACTIVE',
+                    overlap_geom GEOMETRY(Geometry, 4326),
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+                ALTER TABLE conflicts ADD COLUMN IF NOT EXISTS conflict_id VARCHAR(64);
+                ALTER TABLE conflicts ADD COLUMN IF NOT EXISTS status VARCHAR(32) DEFAULT 'ACTIVE';
+                ALTER TABLE conflicts ADD COLUMN IF NOT EXISTS overlap_geom GEOMETRY(Geometry, 4326);
+                ALTER TABLE conflicts ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+
+                CREATE INDEX IF NOT EXISTS idx_conflicts_overlap_geom ON conflicts USING GIST(overlap_geom);
+                CREATE INDEX IF NOT EXISTS idx_conflicts_project_a ON conflicts(project_a_id);
+                CREATE INDEX IF NOT EXISTS idx_conflicts_project_b ON conflicts(project_b_id);
+            """)
             conn.commit()
-            print("[Database] PostGIS tables and indexes initialized successfully.")
+            print("[Database] PostGIS tables (municipal_projects, conflicts) and indexes initialized successfully.")
     except Exception as e:
         conn.rollback()
         print(f"[Database Error] init_db failed: {e}")
@@ -451,17 +483,59 @@ def seed_demo_conflict_pair():
     res_a = insert_municipal_project(proj_a)
     res_b = insert_municipal_project(proj_b)
 
+    # Persist mock conflict pair into conflicts table
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            clash_id = f"clash-{res_a['id']}-{res_b['id']}"
+            cur.execute("""
+                INSERT INTO conflicts (
+                    conflict_id, project_a_id, project_b_id, corridor_name,
+                    overlap_length_m, avoidable_restoration_cost_inr, severity, status,
+                    overlap_geom
+                ) VALUES (
+                    %s, %s, %s, %s, %s, %s, %s, %s,
+                    ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326)
+                )
+                ON CONFLICT (conflict_id) DO UPDATE SET
+                    status = EXCLUDED.status,
+                    avoidable_restoration_cost_inr = EXCLUDED.avoidable_restoration_cost_inr;
+            """, (
+                clash_id,
+                res_a["id"],
+                res_b["id"],
+                "MG Road",
+                1280.0,
+                3840000.0,
+                "CRITICAL_STATUTORY_WARRANTY_VIOLATION",
+                "ACTIVE",
+                json.dumps(route_feature["geometry"])
+            ))
+            conn.commit()
+    except Exception as e:
+        print(f"[Database Warning] Inserting seeded conflict into conflicts table: {e}")
+    finally:
+        conn.close()
+
     return {
         "seeded_projects": [res_a, res_b],
         "message": "Demo Conflict Pair seeded successfully into PostGIS."
     }
 
 def clear_all_projects():
-    """Wipes all saved municipal projects."""
+    """Wipes all saved municipal projects and conflicts."""
     conn = get_connection()
     try:
         with conn.cursor() as cur:
-            cur.execute("TRUNCATE TABLE municipal_projects RESTART IDENTITY CASCADE;")
+            cur.execute("TRUNCATE TABLE conflicts, municipal_projects RESTART IDENTITY CASCADE;")
             conn.commit()
+    except Exception:
+        try:
+            with conn.cursor() as cur:
+                cur.execute("TRUNCATE TABLE municipal_projects RESTART IDENTITY CASCADE;")
+                conn.commit()
+        except Exception as e:
+            conn.rollback()
+            raise e
     finally:
         conn.close()
