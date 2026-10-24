@@ -9,11 +9,13 @@ import { LandingPortal } from './components/LandingPortal';
 import { MunicipalLoader } from './components/ui/loader';
 import { TermsPage } from './pages/Terms';
 import { PrivacyPage } from './pages/Privacy';
+import { ProductTour } from './components/ProductTour';
 import {
   FileText,
   Layers,
   Trash2,
   Play,
+  Compass,
 } from 'lucide-react';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://digonce-fn9g.onrender.com';
@@ -43,6 +45,7 @@ export function App() {
   // Console-level state
   const [isIngestModalOpen, setIsIngestModalOpen] = useState<boolean>(false);
   const [verificationData, setVerificationData] = useState<{ rawText: string; extraction: any } | null>(null);
+  const [isTourOpen, setIsTourOpen] = useState<boolean>(false);
 
   const [corridors, setCorridors] = useState<any[]>([]);
   const [activeCorridor, setActiveCorridor] = useState<any | null>(null);
@@ -163,6 +166,40 @@ export function App() {
     }
   };
 
+  const handleStartTour = async () => {
+    if (currentView !== 'console') {
+      setCurrentView('console');
+    }
+    // Auto-seed demo conflict if corridors are empty so user sees full data visualization
+    if (corridors.length === 0) {
+      setIsSeedingDemo(true);
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/demo/seed-conflict`, { method: 'POST' });
+        const data = await response.json();
+        const projects = data.projects || [];
+        const cl = data.clashes || [];
+        setCorridors(projects);
+        setClashes(cl);
+        if (projects.length > 0) setActiveCorridor(projects[0]);
+        setCurrentMonthKey('2026-12');
+        refreshData();
+      } catch (err: any) {
+        console.warn('Auto-seed for walkthrough:', err.message);
+      } finally {
+        setIsSeedingDemo(false);
+      }
+    }
+    setIsTourOpen(true);
+  };
+
+  const handleTourStepChange = (stepIdx: number) => {
+    // When on step 4 (4D Timeline scrubber), focus on Dec 2026 clash window
+    if (stepIdx === 3) {
+      setCurrentMonthKey('2026-12');
+      setFilterByMonth(true);
+    }
+  };
+
   const handlePasteText = () => {
     setCurrentView('console');
     setIsIngestModalOpen(true);
@@ -255,6 +292,7 @@ export function App() {
             onLoadDemoConflict={handleSeedDemoConflict}
             onPasteText={handlePasteText}
             onLaunchConsole={() => setCurrentView('console')}
+            onStartTour={handleStartTour}
             rejectionBanner={rejectionBanner}
           />
         )}
@@ -328,10 +366,17 @@ export function App() {
                 <div style={{ width: '1px', height: '20px', backgroundColor: 'rgba(0,0,0,0.1)' }} />
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ fontSize: '15px', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em' }}>
-                    Nna-Than-Kuzhik
-                  </span>
-                  <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 500 }}>
+                  <img
+                    src="/logo_blk.png"
+                    alt="NNA THAN KUZHIK"
+                    style={{
+                      height: '26px',
+                      width: 'auto',
+                      objectFit: 'contain',
+                      display: 'inline-block',
+                    }}
+                  />
+                  <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 600, letterSpacing: '-0.01em' }}>
                     Command Center
                   </span>
                 </div>
@@ -339,6 +384,29 @@ export function App() {
 
               {/* Right Action Bar */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                {/* Tour / Walkthrough Button */}
+                <button
+                  id="tour-trigger-btn"
+                  onClick={handleStartTour}
+                  className="liquid-glass-button squircle-pill"
+                  style={{
+                    background: 'rgba(14, 165, 233, 0.08)',
+                    border: '1px solid rgba(14, 165, 233, 0.28)',
+                    color: '#0284c7',
+                    padding: '7px 16px',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                  }}
+                  title="Start interactive 5-step walkthrough tour"
+                >
+                  <Compass size={13} color="#0284c7" />
+                  Tour / Walkthrough
+                </button>
+
                 {/* Apple Squircle Load Sample Button (Refined, no saturated red block) */}
                 <button
                   onClick={handleSeedDemoConflict}
@@ -363,6 +431,7 @@ export function App() {
 
                 {/* Ingest Tender Button */}
                 <button
+                  id="tour-ingest-tender"
                   onClick={() => setIsIngestModalOpen(true)}
                   className="squircle-pill"
                   style={{
@@ -432,7 +501,7 @@ export function App() {
             </header>
 
             {/* ── 2. Full-Bleed Map Canvas ── */}
-            <div style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}>
+            <div id="tour-map-corridor" style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}>
               <MapViewer
                 corridors={corridors}
                 activeCorridor={activeCorridor}
@@ -447,6 +516,7 @@ export function App() {
 
             {/* ── 3. Floating Liquid Glass Squircle Sidebar ── */}
             <aside
+              id="tour-municipal-registry"
               className="liquid-glass squircle-card"
               style={{
                 position: 'absolute',
@@ -620,6 +690,13 @@ export function App() {
           onResolve={handleResolveClash}
         />
       )}
+
+      {/* Interactive 5-Step Guided Product Walkthrough Tour */}
+      <ProductTour
+        isOpen={isTourOpen}
+        onClose={() => setIsTourOpen(false)}
+        onStepChange={handleTourStepChange}
+      />
     </div>
   );
 }

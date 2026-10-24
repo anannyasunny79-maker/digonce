@@ -5,6 +5,7 @@ import {
   FileText,
   ArrowRight,
   ShieldCheck,
+  Compass,
   X
 } from 'lucide-react';
 
@@ -13,6 +14,7 @@ interface LandingPortalProps {
   onLoadDemoConflict: () => void;
   onPasteText: () => void;
   onLaunchConsole: () => void;
+  onStartTour?: () => void;
   rejectionBanner?: { show: boolean; category: string } | null;
 }
 
@@ -21,6 +23,7 @@ export const LandingPortal: React.FC<LandingPortalProps> = ({
   onLoadDemoConflict,
   onPasteText,
   onLaunchConsole,
+  onStartTour,
   rejectionBanner
 }) => {
   const [isPasteOpen, setIsPasteOpen] = useState(false);
@@ -78,7 +81,29 @@ export const LandingPortal: React.FC<LandingPortalProps> = ({
         </div>
 
         {/* Right Nav */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          {onStartTour && (
+            <button
+              onClick={onStartTour}
+              className="liquid-glass-button squircle-pill"
+              style={{
+                padding: '8px 16px',
+                fontSize: '12px',
+                fontWeight: 600,
+                color: '#38bdf8',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                border: '1px solid rgba(56, 189, 248, 0.35)',
+                background: 'rgba(56, 189, 248, 0.1)'
+              }}
+            >
+              <Compass size={14} color="#38bdf8" />
+              Product Tour
+            </button>
+          )}
+
           <button
             onClick={onLaunchConsole}
             className="liquid-glass-button squircle-pill"
@@ -136,31 +161,29 @@ export const LandingPortal: React.FC<LandingPortalProps> = ({
           </div>
         )}
 
-        <h1
+        {/* Visual Brand Identity - NNA THAN KUZHIK */}
+        <div
           style={{
-            fontSize: 'clamp(36px, 5.5vw, 62px)',
-            fontWeight: 800,
-            letterSpacing: '-0.03em',
-            color: '#ffffff',
-            lineHeight: 1.1,
-            margin: 0,
-            textShadow: '0 4px 20px rgba(0,0,0,0.35)'
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: '16px',
+            maxHeight: '19vh',
           }}
         >
-          Coordinate Smarter. Build Once.
-        </h1>
-        <p
-          style={{
-            fontSize: 'clamp(14px, 1.8vw, 17px)',
-            color: 'rgba(255, 255, 255, 0.78)',
-            maxWidth: '620px',
-            marginTop: '14px',
-            lineHeight: 1.5,
-            fontWeight: 400
-          }}
-        >
-          AI-powered 4D municipal infrastructure orchestration. Eliminating redundant road trenching across civil utilities before capital is spent.
-        </p>
+          <img
+            src="/logo_whte.png"
+            alt="NNA THAN KUZHIK - Municipal De-Confliction"
+            style={{
+              maxHeight: '18vh',
+              width: 'auto',
+              maxWidth: '260px',
+              objectFit: 'contain',
+              filter: 'drop-shadow(0 8px 30px rgba(0,0,0,0.5))',
+            }}
+          />
+        </div>
 
         {/* ── Liquid Glass Squircle Upload Container ── */}
         <div

@@ -14,11 +14,11 @@ export const IngestModal: React.FC<IngestModalProps> = ({
   onExtractionReady,
   apiBaseUrl
 }) => {
-  const [activeTab, setActiveTab] = useState<'upload' | 'paste' | 'samples'>('samples');
+  const [activeTab, setActiveTab] = useState<'upload' | 'paste' | 'samples'>('upload');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [pastedText, setPastedText] = useState<string>('');
   const [samples, setSamples] = useState<any[]>([]);
-  const [selectedSampleId, setSelectedSampleId] = useState<string>('sample-1');
+  const [selectedSampleId, setSelectedSampleId] = useState<string>('');
   
   // Optional custom API keys
   const [customOpenAIKey, setCustomOpenAIKey] = useState<string>('');
@@ -34,7 +34,13 @@ export const IngestModal: React.FC<IngestModalProps> = ({
     if (isOpen) {
       fetch(`${apiBaseUrl}/api/samples`)
         .then((res) => res.json())
-        .then((data) => setSamples(data))
+        .then((data) => {
+          const list = Array.isArray(data) ? data : [];
+          setSamples(list);
+          if (list.length > 0) {
+            setSelectedSampleId(list[0].id);
+          }
+        })
         .catch((err) => console.error('Failed to load samples:', err));
     }
   }, [isOpen, apiBaseUrl]);
@@ -306,46 +312,68 @@ export const IngestModal: React.FC<IngestModalProps> = ({
               <label style={{ fontSize: '13px', fontWeight: 600, color: '#0f172a' }}>
                 Select Municipal Tender Notice:
               </label>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {samples.map((s) => (
-                  <div
-                    key={s.id}
-                    onClick={() => setSelectedSampleId(s.id)}
-                    style={{
-                      padding: '12px 14px',
-                      border: selectedSampleId === s.id ? '1px solid #0f172a' : '1px solid #e2e8f0',
-                      backgroundColor: selectedSampleId === s.id ? '#f8fafc' : '#ffffff',
-                      borderRadius: '2px',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center'
-                    }}
-                  >
-                    <div>
-                      <div style={{ fontSize: '13px', fontWeight: 600, color: '#0f172a' }}>
-                        {s.title}
-                      </div>
-                      <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
-                        {s.agency} &bull; {s.corridor} ({s.start} &rarr; {s.end})
-                      </div>
-                    </div>
-                    <span className="badge badge-pipeline">{s.type}</span>
-                  </div>
-                ))}
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '8px' }}>
-                <button
-                  type="button"
-                  className="btn-primary"
-                  onClick={handleProcessSample}
-                  disabled={isLoading}
+              {samples.length === 0 ? (
+                <div
+                  style={{
+                    padding: '28px 20px',
+                    textAlign: 'center',
+                    backgroundColor: '#f8fafc',
+                    border: '1px dashed #cbd5e1',
+                    borderRadius: '2px',
+                    color: '#64748b'
+                  }}
                 >
-                  <ArrowRight size={16} />
-                  {isLoading ? 'Extracting Parameters...' : 'Ingest Document'}
-                </button>
-              </div>
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: '#334155', marginBottom: '4px' }}>
+                    No Sample Tenders Loaded
+                  </div>
+                  <div style={{ fontSize: '12px' }}>
+                    Use the <strong>Upload PDF</strong> or <strong>Paste Text Snippet</strong> tab to ingest your custom municipal tender notices.
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {samples.map((s) => (
+                      <div
+                        key={s.id}
+                        onClick={() => setSelectedSampleId(s.id)}
+                        style={{
+                          padding: '12px 14px',
+                          border: selectedSampleId === s.id ? '1px solid #0f172a' : '1px solid #e2e8f0',
+                          backgroundColor: selectedSampleId === s.id ? '#f8fafc' : '#ffffff',
+                          borderRadius: '2px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center'
+                        }}
+                      >
+                        <div>
+                          <div style={{ fontSize: '13px', fontWeight: 600, color: '#0f172a' }}>
+                            {s.title}
+                          </div>
+                          <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
+                            {s.agency} &bull; {s.corridor} ({s.start} &rarr; {s.end})
+                          </div>
+                        </div>
+                        <span className="badge badge-pipeline">{s.type}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '8px' }}>
+                    <button
+                      type="button"
+                      className="btn-primary"
+                      onClick={handleProcessSample}
+                      disabled={isLoading || !selectedSampleId}
+                    >
+                      <ArrowRight size={16} />
+                      {isLoading ? 'Extracting Parameters...' : 'Ingest Document'}
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           )}
 

@@ -360,6 +360,7 @@ export const MapViewer: React.FC<MapViewerProps> = ({
       {/* Floating Clash Alert Badge with Grounded Economic Quantification (₹38,40,000) */}
       {hasActiveClash && !isSynchronized && (
         <div
+          id="tour-clash-badge"
           onClick={() => onOpenClashModal && onOpenClashModal(primaryClash)}
           className="liquid-glass squircle-card"
           style={{
@@ -398,6 +399,7 @@ export const MapViewer: React.FC<MapViewerProps> = ({
       {/* Floating Synchronized Success Badge */}
       {isSynchronized && (
         <div
+          id="tour-clash-badge"
           onClick={() => onOpenClashModal && onOpenClashModal(primaryClash)}
           className="liquid-glass squircle-card"
           style={{

@@ -177,9 +177,122 @@ Access the application dashboard at `http://localhost:5173`.
 
 ## Product Demo
 
+<<<<<<< HEAD
 * **Live API Backend:** [https://digonce-fn9g.onrender.com/api/health](https://digonce-fn9g.onrender.com/api/health)
 * **Corridor Endpoint:** [https://digonce-fn9g.onrender.com/api/corridors](https://digonce-fn9g.onrender.com/api/corridors)
 * **Clashes Endpoint:** [https://digonce-fn9g.onrender.com/api/clashes](https://digonce-fn9g.onrender.com/api/clashes)
+=======
+- [x] Automated civil tender classification and structured data extraction
+- [x] Text citation extraction and confidence indicators
+- [x] Local road network gazetteer and OSMnx graph routing
+- [x] PostGIS corridor buffering and spatial intersection analysis
+- [x] Schedule of Rates cost quantification model
+- [ ] Visual project synchronization calendar and Gantt viewer
+- [ ] Automated inter-agency joint coordination proposal exports
+- [ ] Versioned audit logs with municipal commissioner sign-off tracking
+- [ ] Multi-city graph ingestion across Indian urban centers
+
+---
+
+## Submission & Demo Links
+
+* **Repository:** [https://github.com/anannyasunny79-maker/digonce](https://github.com/anannyasunny79-maker/digonce)
+* **Live Demo App:** `http://localhost:5173` (Local Prototype) / Cloud Demo
+* **Product Demo Video:** [Watch Prototype Demo](https://github.com/anannyasunny79-maker/digonce)
+* **Team:** **Nfinits** (AIBoomi Startup Weekend)
+
+---
+
+## Pitch Deck (6 Slides)
+
+### Slide 1: Problem & Who's Affected
+* **The Urban Dilemma:** In Indian Tier-1/Tier-2 cities (e.g., Kochi), the Public Works Department (PWD) completes a road resurfacing project, only for the Water Authority (KWA) or Electricity Board (KSEB) to trench through the freshly laid asphalt weeks later.
+* **Who is Affected:**
+  * **Municipal Authorities:** Bleeding crores in avoidable restoration costs and pavement warranty claims.
+  * **Citizens & Commuters:** Trapped in repeated gridlocks, hazardous potholes, and construction dust.
+  * **Utility Contractors:** Facing inter-agency delays, permit freezes, and public litigation.
+
+### Slide 2: The Insight (Why Now & Why Us)
+* **Why Now:** 
+  1. Municipalities are moving toward digital e-tender portals, generating massive unstructured document streams.
+  2. Foundation models now enable reliable structured extraction with verifiable evidence citations.
+  3. GIS tooling (OSMnx/PostGIS) allows real-time street centerline graph alignment without expensive surveyor overhead.
+* **Our Edge:** Deep civil engineering domain modeling: combining 4D spatio-temporal corridor buffering, Kerala PWD Schedule of Rates economic quantification, and Depth-Hierarchy Resequencing.
+
+### Slide 3: Solution Demo (Screens & Core Flow)
+1. **Document Ingestion:** Drag-and-drop raw tender PDF or paste tender notice text.
+2. **AI Gatekeeper & Entity Extractor:** Classifies civil vs non-civil work; extracts corridor bounds, depth, and dates with evidence quote spans.
+3. **High-Fidelity GIS Alignment:** Snaps landmark junctions to OpenStreetMap road graph centerlines with 8m safety buffers.
+4. **4D Spatio-Temporal Collision Engine:** Detects overlapping excavation footprints and statutory Defect Liability Period (DLP) violations.
+5. **Restoration Cost Modeling:** Quantifies exact avoidable reconstruction loss (e.g., ₹38,40,000 on MG Road).
+6. **One-Click Resequence & Syndicate:** Re-orders schedules by depth hierarchy (subsurface utilities first, surface pavement second) and shifts corridor status to *Synchronized* (Electric Blue) with a cryptographic Mayor sign-off audit hash.
+
+### Slide 4: Technical Approach (Models, Data & Architecture)
+* **Document Intelligence:** OpenAI GPT-4o-mini with Pydantic JSON schemas, constrained classification, and span-level evidence attribution.
+* **Spatial GIS Engine:** OSMnx road graph routing (Dijkstra shortest path along drivable street centerlines), Shapely geometry, and PostGIS spatial intersections.
+* **Persistence & Resilience:** PostgreSQL/PostGIS (Supabase/Docker) with spatial GIST indexes and an automatic, zero-downtime in-memory fallback layer.
+* **Frontend:** React + Vite + Tailwind CSS + Leaflet with real-time timeline filtering and visual corridor inspection.
+
+### Slide 5: Value & Go-to-Market (Who Pays & Adoption)
+* **Value Delivered:** 100% savings on avoidable pavement destruction (averaging ₹25–40 Lakhs saved per overlapping kilometer).
+* **Who Pays:**
+  * **B2G (Direct Government):** Smart City Integrated Command and Control Centers (ICCC), Urban Local Bodies (Corporations/Municipalities), and State PWDs under municipal IT modernization grants.
+  * **B2B Infrastructure Providers:** City Gas Distribution (CGD) and Telecom companies seeking streamlined Right-of-Way (RoW) approvals.
+* **GTM Strategy:** Grassroots pilot with Kochi Municipal Corporation & Kerala PWD Roads Division; land-and-expand to statewide K-DISC and national Gati Shakti city grids.
+
+### Slide 6: Next Steps (Roadmap & Risk Mitigation)
+* **Roadmap:**
+  * **Q1 2027:** Multi-city graph expansion (Bengaluru, Chennai, Thiruvananthapuram).
+  * **Q2 2027:** Integration with state e-procurement (GeM / Kerala e-GP) webhooks for real-time tender intake.
+  * **Q3 2027:** Mobile app for on-site municipal road inspectors with GPS geotagging.
+* **Risks & Mitigation:**
+  * *Missing Landmark Coordinates:* Hybrid Local Gazetteer + geocoding fallback.
+  * *Scanned PDFs:* OCR ingestion layer.
+  * *Inter-agency Politics:* Verifiable audit trails that guarantee shared credit and zero pavement warranty voiding.
+
+---
+
+## AI Impact Statement
+
+**Dig-Once** utilizes OpenAI GPT-4o-mini for specialized municipal infrastructure intelligence. The AI pipeline performs two tasks: (1) a statutory gatekeeper classification to filter non-civil procurement (supplies, leases) from the municipal Right-of-Way grid, and (2) structured extraction of civil engineering parameters (corridors, boundary junctions, subsurface depths, and execution schedules).
+
+**Data Provenance & Licenses:** Models are prompted strictly against publicly published municipal e-tender notices under open government data mandates. Street graph topologies derive from OpenStreetMap (ODbL licensed). Rates adhere to the Kerala PWD Schedule of Rates.
+
+**Hallucination & Bias Mitigations:** The system enforces strict Pydantic schemas, temperature=0.0 deterministic parsing, and mandatory text span attribution—every extracted date, junction, and depth must cite the exact quote from the source tender. Low-confidence extractions are flagged for human-in-the-loop engineering verification.
+
+**Expected Outcomes:** Prevents crores of rupees in repetitive pavement destruction, reduces urban traffic congestion and particulate emissions caused by re-excavation, and delivers a transparent, coordinated civic planning layer for safer, smarter cities.
+
+---
+
+## Resilience & Chaos-Engineering Architecture
+
+> *"If your demo crashes, call it chaos-engineering, then show the fallback. Judges love resilience."*
+
+Dig-Once is engineered with a **Dual-Mode Resilient Architecture**:
+1. **Cloud PostGIS Mode:** When connected to PostgreSQL/PostGIS (e.g. Supabase), corridor geometries, 8-meter polygon buffers, GIST spatial indexes, and collision intersection queries are persisted and evaluated directly in PostGIS SQL.
+2. **Resilient In-Memory Fallback Mode:** If database connectivity drops or remote cloud latency spikes during a live presentation, Dig-Once automatically activates its zero-downtime in-memory spatial cache. The platform continues to seed conflicts, compute Kerala PWD Schedule of Rates savings, resolve depth hierarchies, and generate audit hashes without dropping a single frame or throwing 500 errors.
+
+---
+
+## Team: Nfinits
+
+| Name | Role | Responsibilities |
+| :--- | :--- | :--- |
+| **Sreehari K** | Backend & GIS Lead | Full-stack architecture, spatial GIS engine, PostGIS integration, and routing |
+| **Anannya Sunny** | Frontend & Product Lead | Product design, UI/UX engineering, frontend integration, and NLP extraction |
+
+*For queries, feature requests, or technical issues, please submit a GitHub Issue.*
+
+---
+
+## Contributing
+
+Contributions and feedback are welcome:
+1. Fork the repository.
+2. Create a feature branch (`git checkout -b feature/improvement`).
+3. Commit and test modifications.
+4. Submit a pull request detailing the changes.
+>>>>>>> 76c2fa4 (feat: implement NNA THAN KUZHIK brand identity, interactive product tour & dual-mode resilience)
 
 ---
 

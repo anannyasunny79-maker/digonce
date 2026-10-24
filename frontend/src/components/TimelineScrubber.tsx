@@ -68,6 +68,7 @@ export const TimelineScrubber: React.FC<TimelineScrubberProps> = ({
 
   return (
     <div
+      id="tour-timeline-scrubber"
       style={{
         position: 'absolute',
         bottom: 0,
