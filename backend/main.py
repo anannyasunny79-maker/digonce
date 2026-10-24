@@ -288,13 +288,13 @@ def clear_corridors():
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/demo/seed-conflict")
-def seed_conflict():
+async def seed_conflict():
     """
     Action Plan Item 3: Seed Conflicting PWD & KWA Tenders.
     Seeds:
     1. Project A: Kerala PWD Road Resurfacing (Oct 2026 - Nov 2026, 36m DLP)
     2. Project B: Kerala Water Authority Water Main Replacement (Dec 2026 - Jan 2027, 1.8m depth)
-    Both along MG Road (Jos Junction to Padma Junction).
+    Both along MG Road (Jos Junction to Padma Junction) into PostGIS municipal_projects & conflicts tables.
     """
     try:
         clear_all_projects()
@@ -303,7 +303,7 @@ def seed_conflict():
         clashes = detect_clashes()
         return {
             "status": "success",
-            "message": "Seeded Canonical Civil Engineering Conflict Pair on MG Road",
+            "message": "Demo conflict seeded successfully",
             "projects": projects,
             "clashes": clashes
         }

@@ -147,11 +147,13 @@ export function App() {
     setCurrentView('console');
     try {
       const response = await fetch(`${API_BASE_URL}/api/demo/seed-conflict`, { method: 'POST' });
-      if (!response.ok) throw new Error('Failed to seed demo conflict');
       const data = await response.json();
-      setCorridors(data.projects);
-      setClashes(data.clashes);
-      if (data.projects.length > 0) setActiveCorridor(data.projects[0]);
+      if (!response.ok) throw new Error(data.detail || data.message || 'Failed to seed demo conflict');
+      const projects = data.projects || [];
+      const clashes = data.clashes || [];
+      setCorridors(projects);
+      setClashes(clashes);
+      if (projects.length > 0) setActiveCorridor(projects[0]);
       setCurrentMonthKey('2026-12');
       refreshData();
     } catch (err: any) {
