@@ -16,7 +16,7 @@ import {
   Play,
 } from 'lucide-react';
 
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://digonce-fn9g.onrender.com';
 
 type AppView = 'portal' | 'loading' | 'console' | 'terms' | 'privacy';
 
@@ -72,7 +72,7 @@ export function App() {
   const refreshData = async () => {
     try {
       await fetch(`${API_BASE_URL}/api/health`);
-    } catch (_) {}
+    } catch (_) { }
 
     try {
       const corrRes = await fetch(`${API_BASE_URL}/api/corridors`);
@@ -83,13 +83,13 @@ export function App() {
           setActiveCorridor(corrData.corridors[corrData.corridors.length - 1]);
         }
       }
-    } catch (_) {}
+    } catch (_) { }
 
     try {
       const clashRes = await fetch(`${API_BASE_URL}/api/clashes`);
       const clashData = await clashRes.json();
       if (clashData.clashes) setClashes(clashData.clashes);
-    } catch (_) {}
+    } catch (_) { }
   };
 
   useEffect(() => {
