@@ -94,7 +94,7 @@ export const TermsPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
             {
               icon: FileText,
               title: '1. Nature of the System',
-              text: 'Dig-Once is a municipal decision-support and spatial coordination platform designed for public utility authorities and civil infrastructure departments across PWD, KWA, KSEB, and local municipal corporations.'
+              text: 'Nna-Than-Kuzhik is a municipal decision-support and spatial coordination platform designed for public utility authorities and civil infrastructure departments across PWD, KWA, KSEB, and local municipal corporations.'
             },
             {
               icon: AlertTriangle,

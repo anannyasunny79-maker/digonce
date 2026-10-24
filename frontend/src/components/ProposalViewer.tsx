@@ -268,7 +268,7 @@ export const ProposalViewer: React.FC<ProposalViewerProps> = ({
             </div>
 
             <div style={{ marginTop: '24px', textAlign: 'center', fontSize: '10px', color: '#64748b' }}>
-              Certified and cryptographically logged by Dig-Once Municipal Spatial Decision Support System &bull; System Timestamp: {timestamp}
+              Certified and cryptographically logged by Nna-Than-Kuzhik Municipal Spatial Decision Support System &bull; System Timestamp: {timestamp}
             </div>
           </div>
 

@@ -1,6 +1,6 @@
 <div align="center">
 
-# Dig-Once
+# Nna-Than-Kuzhik
 
 ### **AI-Powered 4D Municipal Infrastructure Orchestration & Spatial De-Confliction Platform**
 
@@ -47,7 +47,7 @@ City roads are frequently resurfaced by public works authorities, only to be exc
 
 ## Solution Overview
 
-**Dig-Once** is an enterprise-grade 4D spatio-temporal infrastructure orchestration platform that ingests unstructured municipal tender PDFs, projects planned works onto routable road graphs, identifies subsurface overlaps before work orders are executed, and automatically reschedules projects into unified joint digging windows.
+**Nna-Than-Kuzhik** is an enterprise-grade 4D spatio-temporal infrastructure orchestration platform that ingests unstructured municipal tender PDFs, projects planned works onto routable road graphs, identifies subsurface overlaps before work orders are executed, and automatically reschedules projects into unified joint digging windows.
 
 The platform is designed around three core operational pillars:
 1. **Automated NLP Ingestion:** Extraction of tender boundaries, chainages, subsurface depths, and execution schedules from unstructured PDFs.
@@ -191,7 +191,7 @@ This project is licensed under the **MIT License**. See the `LICENSE` file for d
 
 <div align="center">
 
-**Dig-Once: Municipal Infrastructure Spatial De-Confliction Platform**  
+**Nna-Than-Kuzhik: Municipal Infrastructure Spatial De-Confliction Platform**  
 *Coordinating public civil infrastructure before capital is spent.*
 
 </div>

@@ -66,7 +66,7 @@ def resolve_junction_coordinates(junction_name: str, custom_serp_key: Optional[s
     # 3. Tertiary fallback: OpenStreetMap Nominatim
     try:
         nom_url = "https://nominatim.openstreetmap.org/search"
-        headers = {"User-Agent": "DigOnce-Municipal-Ingestion/1.0 (municipal.infra@kochi.gov.in)"}
+        headers = {"User-Agent": "Nna-Than-Kuzhik-Municipal-Ingestion/1.0 (municipal.infra@kochi.gov.in)"}
         params = {"q": f"{junction_name}, Kochi, Kerala, India", "format": "json", "limit": 1}
         resp = requests.get(nom_url, params=params, headers=headers, timeout=5)
         if resp.status_code == 200:

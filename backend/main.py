@@ -43,7 +43,7 @@ except ImportError:
     )
 
 app = FastAPI(
-    title="Dig-Once Municipal Decision Support Service",
+    title="Nna-Than-Kuzhik Municipal Decision Support Service",
     description="Phase 2: 4D Spatio-Temporal De-Confliction Engine with PostGIS Persistence, KPWD Rates Quantification & Resolve/Syndicate Workflow.",
     version="2.0.0"
 )
@@ -58,15 +58,15 @@ app.add_middleware(
 
 @app.on_event("startup")
 async def startup_event():
-    print("[Dig-Once Backend] Initializing drive graph, gazetteer, and PostGIS database...")
+    print("[Nna-Than-Kuzhik Backend] Initializing drive graph, gazetteer, and PostGIS database...")
     try:
         init_db()
-        print("[Dig-Once Backend] PostGIS connected and initialized successfully.")
+        print("[Nna-Than-Kuzhik Backend] PostGIS connected and initialized successfully.")
     except Exception as e:
-        print(f"[Dig-Once Backend Warning] Could not connect to PostGIS on startup: {e}")
+        print(f"[Nna-Than-Kuzhik Backend Warning] Could not connect to PostGIS on startup: {e}")
 
     graph = get_drive_graph()
-    print(f"[Dig-Once Backend] Kochi road graph loaded ({len(graph.nodes)} nodes, {len(graph.edges)} edges).")
+    print(f"[Nna-Than-Kuzhik Backend] Kochi road graph loaded ({len(graph.nodes)} nodes, {len(graph.edges)} edges).")
 
 @app.get("/api/health")
 def health_check():
@@ -85,7 +85,7 @@ def health_check():
 
     return {
         "status": "operational",
-        "service": "Dig-Once Phase 2 De-Confliction Engine",
+        "service": "Nna-Than-Kuzhik Phase 2 De-Confliction Engine",
         "postgis_connected": db_connected,
         "persisted_projects": project_count,
         "active_clashes": active_clashes,

@@ -69,7 +69,7 @@ export const LandingPortal: React.FC<LandingPortalProps> = ({
           </div>
           <div>
             <span style={{ fontSize: '15px', fontWeight: 700, color: '#ffffff', letterSpacing: '-0.01em' }}>
-              Dig-Once
+              Nna-Than-Kuzhik
             </span>
             <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', marginLeft: '8px', fontWeight: 400 }}>
               Municipal De-confliction Engine
@@ -306,7 +306,7 @@ export const LandingPortal: React.FC<LandingPortalProps> = ({
           zIndex: 10
         }}
       >
-        <span>Dig-Once © 2026 • Municipal Spatial Infrastructure Synchronization</span>
+        <span>Nna-Than-Kuzhik © 2026 • Municipal Spatial Infrastructure Synchronization</span>
         <span>Advisory Spatial Decision Support</span>
       </footer>
     </div>

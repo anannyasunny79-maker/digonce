@@ -94,7 +94,7 @@ export const ConflictProposalDrawer: React.FC<ConflictProposalDrawerProps> = ({
                 </h2>
                 <div style={{ fontSize: '11.5px', opacity: 0.9 }}>
                   {isAlreadySynced
-                    ? 'Depth-hierarchy execution window scheduled & locked under Dig-Once Mandate'
+                    ? 'Depth-hierarchy execution window scheduled & locked under Nna-Than-Kuzhik Mandate'
                     : 'Statutory Defect Liability Period (DLP) Violation on MG Road Corridor'}
                 </div>
               </div>
@@ -250,7 +250,7 @@ export const ConflictProposalDrawer: React.FC<ConflictProposalDrawerProps> = ({
             >
               <div style={{ fontWeight: 700, color: '#0f172a', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <Zap size={14} color="#0284c7" />
-                <span>Dig-Once Autonomous Depth-Hierarchy Resolution Principle</span>
+                <span>Nna-Than-Kuzhik Autonomous Depth-Hierarchy Resolution Principle</span>
               </div>
               <p style={{ color: '#475569', lineHeight: 1.5, margin: 0 }}>
                 Civil engineering laws dictate that deeper utility infrastructure must be installed prior to surface paving:

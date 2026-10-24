@@ -423,7 +423,7 @@ def resolve_and_syndicate_clash(clash_id: str, auto_resequence: bool = True) -> 
                     }
                 ],
                 "financial_savings": "₹38,40,000 (100% Avoidable Reconstruction Waste Saved)",
-                "statutory_compliance": "Kerala Highway Protection Act & Dig-Once Municipal Policy 2026"
+                "statutory_compliance": "Kerala Highway Protection Act & Nna-Than-Kuzhik Municipal Policy 2026"
             }
     finally:
         conn.close()

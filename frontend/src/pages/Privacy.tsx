@@ -94,7 +94,7 @@ export const PrivacyPage: React.FC<{ onBack: () => void }> = ({ onBack }) => {
             {
               icon: Database,
               title: '1. Ingestion of Public Procurement Notices',
-              text: 'Dig-Once operates exclusively on publicly accessible municipal e-procurement gazettes, statutory Right-of-Way (RoW) permit queues, and open geographic layers. The system does not harvest, store, or profile confidential private citizen records.'
+              text: 'Nna-Than-Kuzhik operates exclusively on publicly accessible municipal e-procurement gazettes, statutory Right-of-Way (RoW) permit queues, and open geographic layers. The system does not harvest, store, or profile confidential private citizen records.'
             },
             {
               icon: EyeOff,

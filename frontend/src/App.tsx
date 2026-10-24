@@ -329,7 +329,7 @@ export function App() {
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span style={{ fontSize: '15px', fontWeight: 800, color: '#0f172a', letterSpacing: '-0.02em' }}>
-                    Dig-Once
+                    Nna-Than-Kuzhik
                   </span>
                   <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 500 }}>
                     Command Center
