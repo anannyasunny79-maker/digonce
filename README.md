@@ -94,8 +94,8 @@ Supporting frameworks: OpenAI API (GPT-4o-mini), pdfplumber, OSMnx, NetworkX
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/anannyasunny79-maker/digonce.git
-cd digonce
+git clone https://github.com/anannyasunny79-maker/nna-than-kuzhik.git
+cd nna-than-kuzhik
 ```
 
 ### 2. Backend Setup (`/backend`)
